@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VibeTune - MCA Final Year Project Report & Viva Voce Guide</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm 18mm 20mm 18mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.55;
+            color: #1e293b;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* COVER PAGE STYLING */
+        .cover-page {
+            page-break-after: always;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center;
+            padding: 35px 20px 20px 20px;
+            border: 2px solid #7c3aed;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);
+        }
+
+        .cover-inst {
+            font-size: 13pt;
+            font-weight: 700;
+            color: #475569;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .cover-doc-type {
+            font-size: 21pt;
+            font-weight: 800;
+            color: #6d28d9;
+            margin: 10px 0;
+            letter-spacing: 1px;
+        }
+
+        .cover-standard {
+            display: inline-block;
+            background-color: #ede9fe;
+            color: #6d28d9;
+            font-size: 9.5pt;
+            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .cover-title-box {
+            margin: 25px 0;
+            padding: 24px;
+            border-top: 2px solid #7c3aed;
+            border-bottom: 2px solid #7c3aed;
+            background-color: #ffffff;
+        }
+
+        .cover-app-title {
+            font-size: 32pt;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: 3px;
+        }
+
+        .cover-app-subtitle {
+            font-size: 12.5pt;
+            font-weight: 500;
+            color: #7c3aed;
+            margin-top: 8px;
+        }
+
+        .cover-meta {
+            margin: 20px auto;
+            width: 100%;
+            max-width: 580px;
+        }
+
+        .cover-meta table {
+            width: 100%;
+            font-size: 9.5pt;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .cover-meta th, .cover-meta td {
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            text-align: left;
+        }
+
+        .cover-meta th {
+            background-color: #1e1b4b;
+            color: #ffffff;
+            width: 38%;
+            font-weight: 600;
+        }
+
+        .cover-meta td {
+            background-color: #ffffff;
+            color: #1e293b;
+        }
+
+        .cover-footer {
+            font-size: 9pt;
+            color: #64748b;
+            margin-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+
+        /* CONTENT STYLING */
+        h1 {
+            color: #4c1d95;
+            font-size: 16pt;
+            border-bottom: 2px solid #7c3aed;
+            padding-bottom: 4px;
+            margin-top: 28px;
+            margin-bottom: 12px;
+            page-break-after: avoid;
+        }
+
+        h2 {
+            color: #6d28d9;
+            font-size: 13pt;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            border-left: 4px solid #7c3aed;
+            padding-left: 8px;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            color: #1e293b;
+            font-size: 11pt;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin: 6px 0;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin: 6px 0 10px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 3px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 16px 0;
+            font-size: 9pt;
+            page-break-inside: avoid;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 8.5pt;
+            background-color: #f1f5f9;
+            padding: 2px 4px;
+            border-radius: 4px;
+            color: #0f172a;
+        }
+
+        pre {
+            background-color: #0f172a;
+            color: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 8.5pt;
+            overflow-x: auto;
+            margin: 10px 0;
+            page-break-inside: avoid;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: #f8fafc;
+            padding: 0;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin: 18px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+        <div>
+            <div class="cover-inst">Department of Master of Computer Applications</div>
+            <div class="cover-doc-type">MCA FINAL YEAR PROJECT REPORT</div>
+            <div class="cover-standard">& COMPREHENSIVE VIVA VOCE DEMONSTRATION GUIDE</div>
+        </div>
+
+        <div class="cover-title-box">
+            <div class="cover-app-title">VIBETUNE</div>
+            <div class="cover-app-subtitle">A Cross-Platform Synchronized Lyrics, Multilingual Translation & Karaoke Music Application</div>
+        </div>
+
+        <div class="cover-meta">
+            <table>
+                <tr><th>Project Name</th><td>VibeTune Music & Karaoke Application</td></tr>
+                <tr><th>Degree / Course</th><td>Master of Computer Applications (MCA)</td></tr>
+                <tr><th>Frontend Stack</th><td>Flutter 3.x, Dart, Material 3, Audioplayers</td></tr>
+                <tr><th>Backend Stack</th><td>Node.js, Express.js, Mongoose ODM</td></tr>
+                <tr><th>Database</th><td>MongoDB Atlas (Cloud Cluster: <code>vibetune_db</code>)</td></tr>
+                <tr><th>External APIs</th><td>LRCLIB API (Lyrics), MyMemory API (Translation)</td></tr>
+                <tr><th>Target Platforms</th><td>Android (APK & Emulators), Cross-Platform</td></tr>
+                <tr><th>Academic Year</th><td>2025 – 2026</td></tr>
+            </table>
+        </div>
+
+        <div class="cover-footer">
+            Confidential &amp; Proprietary &bull; Master of Computer Applications Final Year Submission
+        </div>
+    </div>
+
+    <!-- MAIN BODY -->
+    <div class="content-container">
+        <h1>VibeTune — MCA Final Year Project Report &amp; Comprehensive Viva Voce Guide</h1>
+<hr />
+<h2>1. Project Abstract</h2>
+<p><strong>VibeTune</strong> is a professional, full-stack cross-platform music streaming and sing-along application built for modern music enthusiasts. Developed using the <strong>Flutter</strong> mobile framework (Dart) for Android and an <strong>Express/Node.js</strong> RESTful backend paired with cloud-hosted <strong>MongoDB Atlas</strong>, VibeTune features real-time <strong>synchronized lyrics (LRC)</strong>, dynamic <strong>multilingual lyric translation</strong> across major Indian film languages (Hindi, Kannada, Telugu, Tamil, Malayalam, and English), and an interactive <strong>Karaoke Sing-Along Mode</strong> with instrumental backing track toggle, stage lighting simulation, and pitch/speed controls.</p>
+<p>Unlike conventional music players that merely display static text blocks, VibeTune synchronizes timestamped lines with millisecond audio playback accuracy, fetches real-time crowdsourced lyrics via the <strong>LRCLIB API</strong>, and enables users to enjoy music across regional language boundaries with on-the-fly line-by-line translation that strictly preserves rhythmic timestamps.</p>
+<hr />
+<h2>2. Problem Statement</h2>
+<p>Contemporary digital streaming services offer vast audio catalogues but present significant UX and accessibility shortcomings for regional audiences and sing-along enthusiasts:
+1. <strong>Unsynchronized or Missing Regional Lyrics</strong>: Most popular platforms either lack lyrics for regional Indian film music or present them as static, unformatted wall-of-text blocks that do not follow playback position.
+2. <strong>Language Barriers in Multilingual Societies</strong>: Listeners who enjoy melodies across regional languages (e.g., a Kannada speaker enjoying a Malayalam melody or a Hindi speaker listening to Telugu cinema tracks) cannot understand the lyrical meaning without external translation tools.
+3. <strong>Absence of Dedicated Karaoke &amp; Instrumental Modes</strong>: Enthusiasts and vocalists who wish to practice singing have to switch to separate software or rely on unofficial, low-quality video streams to find backing tracks with synchronized prompts.
+4. <strong>Data Security &amp; Session Vulnerabilities</strong>: Many student-level music players rely on insecure mock storage or hardcode API keys and plain-text passwords directly on the mobile client.</p>
+<hr />
+<h2>3. Project Objectives</h2>
+<ol>
+<li><strong>Secure User Authentication</strong>: Build a production-grade registration and login subsystem using salt-hashed passwords (<strong>bcryptjs</strong>) and stateless JSON Web Tokens (<strong>JWT</strong>) with client-side secure hardware storage.</li>
+<li><strong>Cloud Database Persistence</strong>: Maintain user profiles, preferences, and session histories on <strong>MongoDB Atlas</strong> (<code>vibetune_db</code>) with Mongoose schema validation.</li>
+<li><strong>Synchronized Lyric Engine</strong>: Design an efficient LRC parsing algorithm that tracks playback position with active line detection and automatic smooth scrolling.</li>
+<li><strong>Multilingual Translation Layer</strong>: Enable on-demand translation across 6 languages while strictly maintaining original time-tags for continuous synchronization.</li>
+<li><strong>Interactive Karaoke Experience</strong>: Integrate dedicated instrumental audio channels, adjustable playback tempo, and a full-screen high-contrast lyrical interface.</li>
+<li><strong>Curated Indian Music Library</strong>: Provide a catalogue of 50+ verified audio tracks covering Bollywood, Sandalwood, Tollywood, Kollywood, and Mollywood genres with genuine metadata.</li>
+</ol>
+<hr />
+<h2>4. Existing System vs. Proposed System</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature / Dimension</th>
+<th style="text-align: left;">Existing Typical Systems</th>
+<th style="text-align: left;">VibeTune Proposed System</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Frontend Framework</strong></td>
+<td style="text-align: left;">Web HTML/JS or Basic Native Android</td>
+<td style="text-align: left;">Flutter 3.x (Declarative, Reactive UI with Material 3 styling)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Backend &amp; Architecture</strong></td>
+<td style="text-align: left;">Static files or monolithic local DB</td>
+<td style="text-align: left;">Express.js REST API + MongoDB Atlas cloud cluster</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Authentication</strong></td>
+<td style="text-align: left;">Plaintext local storage / mock credentials</td>
+<td style="text-align: left;">Salted bcryptjs (10 rounds) + Cryptographic Bearer JWTs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Lyrics Display</strong></td>
+<td style="text-align: left;">Static unsynchronized text</td>
+<td style="text-align: left;">Real-time LRC synchronized scrolling with millisecond highlights</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Multilingual Lyrics</strong></td>
+<td style="text-align: left;">Single fixed language</td>
+<td style="text-align: left;">On-the-fly multilingual translation with preserved time-tags</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Karaoke Capability</strong></td>
+<td style="text-align: left;">None or external third-party links</td>
+<td style="text-align: left;">Native toggle between vocal and instrumental backing tracks</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Offline Resilience</strong></td>
+<td style="text-align: left;">App crashes without network</td>
+<td style="text-align: left;">Cached sessions, offline asset fallbacks, and local catalog</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>5. System Architecture</h2>
+<pre><code class="language-mermaid">graph TD
+    subgraph Client [&quot;Flutter Mobile Client (Android)&quot;]
+        UI[&quot;Modern UI Screens (Splash, Auth, Library, Full Player, Karaoke)&quot;]
+        State[&quot;ChangeNotifier Providers (AuthService, AudioPlayerService, PlaylistService)&quot;]
+        LRC[&quot;LRC Parser &amp; Time-Sync Engine&quot;]
+        Storage[&quot;FlutterSecureStorage &amp; SharedPreferences&quot;]
+    end
+
+    subgraph Backend [&quot;Node.js &amp; Express REST Backend (Port 5000)&quot;]
+        Server[&quot;Express HTTP Server (server.js)&quot;]
+        AuthMiddleware[&quot;JWT Verification Middleware (auth.js)&quot;]
+        AuthRoutes[&quot;Auth Controller (signup, login, me)&quot;]
+        Mongoose[&quot;Mongoose ODM (User Schema)&quot;]
+    end
+
+    subgraph CloudServices [&quot;Cloud &amp; External APIs&quot;]
+        Atlas[(&quot;MongoDB Atlas Cloud Database (vibetune_db.users)&quot;)]
+        LRCLIB[&quot;LRCLIB Global Lyrics API (lrclib.net)&quot;]
+        TranslateAPI[&quot;MyMemory Multilingual Translation API&quot;]
+    end
+
+    UI --&gt; State
+    State --&gt; LRC
+    State --&gt; Storage
+    State --&gt;|&quot;HTTP REST (Bearer JWT)&quot;| Server
+    Server --&gt; AuthMiddleware
+    AuthMiddleware --&gt; AuthRoutes
+    AuthRoutes --&gt; Mongoose
+    Mongoose --&gt;|&quot;TLS Port 27017&quot;| Atlas
+    State --&gt;|&quot;HTTPS GET /api/get&quot;| LRCLIB
+    State --&gt;|&quot;HTTPS GET /get?langpair&quot;| TranslateAPI
+</code></pre>
+<hr />
+<h2>6. Module Descriptions</h2>
+<h3>Module 1: Professional Application UI</h3>
+<ul>
+<li>Custom Dark-Themed aesthetic using deep purples (<code>#18002E</code>), neon amethysts (<code>#9C27B0</code>), and vibrant teals (<code>#00E5FF</code>).</li>
+<li>Intuitive navigation bar: <strong>Home</strong>, <strong>Search</strong>, <strong>Library</strong>, <strong>Karaoke</strong>, and <strong>Profile</strong>.</li>
+<li>Responsive layout adapting to diverse Android screen densities with zero overflow errors.</li>
+</ul>
+<h3>Module 2: User Registration &amp; Login</h3>
+<ul>
+<li><strong>Sign-Up</strong>: Captures Full Name, Email Address, Password, and Password Confirmation. Validates RFC-compliant email formatting and minimum 6-character passwords.</li>
+<li><strong>Sign-In</strong>: Verifies credentials against the bcryptjs salted hash. Generates a signed JWT with a 30-day expiry.</li>
+<li><strong>Hardware Storage</strong>: Persists the JWT in Android <code>EncryptedSharedPreferences</code> via <code>FlutterSecureStorage</code>.</li>
+</ul>
+<h3>Module 3: MongoDB Atlas Cloud Integration</h3>
+<ul>
+<li>Normalized collection <code>vibetune_db.users</code>.</li>
+<li>Schema features:</li>
+<li><code>_id</code>: ObjectId primary key.</li>
+<li><code>name</code>: Trimmed string with length validation.</li>
+<li><code>email</code>: Lowercased, indexed unique string.</li>
+<li><code>password</code>: Excluded from default queries (<code>select: false</code>), hashed with bcrypt 10 rounds.</li>
+<li><code>preferredLanguages</code>: Array of user-selected regional languages.</li>
+<li><code>createdAt</code>, <code>updatedAt</code>: Automatic ISO timestamps.</li>
+</ul>
+<h3>Module 4: Music Search &amp; Authorized Playback</h3>
+<ul>
+<li>Dedicated <code>AudioPlayerService</code> wrapping <code>audioplayers</code>.</li>
+<li>Supports seeking, play/pause, next/previous queue navigation, shuffle, and repeat modes.</li>
+<li>Playback streams authentic audio from verified local assets and remote feeds.</li>
+</ul>
+<h3>Module 5 &amp; 6: LRCLIB Integration &amp; Synchronized Lyrics Engine</h3>
+<ul>
+<li>Queries <code>https://lrclib.net/api/get</code> using title, artist, and album.</li>
+<li>Fallback search endpoint <code>https://lrclib.net/api/search</code> with heuristic ranking favoring synchronized time-tags.</li>
+<li><strong>LRC Synchronizer</strong>: Binary search and linear-threshold active line selection based on <code>player.onPositionChanged</code>.</li>
+<li>Auto-scrolls lyric scroll views smoothly to keep the active singing line centered on screen.</li>
+</ul>
+<h3>Module 7: Multilingual Lyric Translation</h3>
+<ul>
+<li>Translates lines dynamically into <strong>Kannada, Hindi, Telugu, Tamil, Malayalam, or English</strong>.</li>
+<li>Maintains an in-memory translation hash table <code>_cache</code> to prevent redundant network requests.</li>
+<li>Preserves every line's original <code>timestamp: Duration</code> so karaoke synchronization remains flawless in any translated language.</li>
+</ul>
+<h3>Module 8: Karaoke Mode &amp; Stage Experience</h3>
+<ul>
+<li>High-contrast typography optimized for reading at a distance.</li>
+<li>Direct toggle between standard vocal track and dedicated instrumental accompaniment.</li>
+<li>Pitch adjustment, speed playback control (0.75x to 1.5x), and pulsing stage light animations.</li>
+</ul>
+<hr />
+<h2>7. Database Schema Details</h2>
+<pre><code class="language-json">// vibetune_db.users Document Structure
+{
+  &quot;_id&quot;: { &quot;$oid&quot;: &quot;670fd19e2e6b23a129f104d2&quot; },
+  &quot;name&quot;: &quot;Swathi MCA&quot;,
+  &quot;email&quot;: &quot;swathi.mca@vibetune.com&quot;,
+  &quot;password&quot;: &quot;$2a$10$e8wV5j78K1h9Z2X3pL0QTuB8G3wN1p7qY.yK2vL3n4m5O6p7Q8r9s&quot;,
+  &quot;preferredLanguages&quot;: [&quot;Kannada&quot;, &quot;Hindi&quot;, &quot;Telugu&quot;],
+  &quot;createdAt&quot;: { &quot;$date&quot;: &quot;2026-10-16T14:15:26.118Z&quot; },
+  &quot;updatedAt&quot;: { &quot;$date&quot;: &quot;2026-10-16T14:15:26.118Z&quot; },
+  &quot;__v&quot;: 0
+}
+</code></pre>
+<hr />
+<h2>8. Key Algorithms &amp; Code Logic</h2>
+<h3>8.1 LRC Timestamp Parsing Algorithm</h3>
+<p>Standard LRC files format time-tags as <code>[mm:ss.xx]</code> or <code>[mm:ss.xxx]</code> followed by the lyric text:</p>
+<pre><code class="language-dart">static List&lt;LyricLine&gt; parseLrc(String content) {
+  final lines = content.split(RegExp(r'\r?\n'));
+  final List&lt;LyricLine&gt; lyricLines = [];
+  final timeTagRegex = RegExp(r'\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)');
+
+  for (final line in lines) {
+    final match = timeTagRegex.firstMatch(line.trim());
+    if (match != null) {
+      final minutes = int.parse(match.group(1)!);
+      final seconds = int.parse(match.group(2)!);
+      final millisPart = match.group(3)!;
+      final milliseconds = millisPart.length == 2
+          ? int.parse(millisPart) * 10
+          : int.parse(millisPart);
+
+      final lyricText = match.group(4)!.trim();
+      if (lyricText.isNotEmpty) {
+        lyricLines.add(LyricLine(
+          timestamp: Duration(minutes: minutes, seconds: seconds, milliseconds: milliseconds),
+          text: lyricText,
+        ));
+      }
+    }
+  }
+  lyricLines.sort((a, b) =&gt; a.timestamp.compareTo(b.timestamp));
+  return lyricLines;
+}
+</code></pre>
+<h3>8.2 Active Line Calculation Algorithm</h3>
+<pre><code class="language-dart">static int getActiveLineIndex(Duration currentPosition, List&lt;LyricLine&gt; lyrics) {
+  if (lyrics.isEmpty) return -1;
+  if (currentPosition &lt; lyrics.first.timestamp) return 0;
+
+  int activeIndex = 0;
+  for (int i = 0; i &lt; lyrics.length; i++) {
+    if (currentPosition &gt;= lyrics[i].timestamp) {
+      activeIndex = i;
+    } else {
+      break;
+    }
+  }
+  return activeIndex;
+}
+</code></pre>
+<hr />
+<h2>9. Live Viva Demonstration Script (Step-by-Step)</h2>
+<p>Follow this verified sequence when demonstrating the project to the external examiner:</p>
+<h3>Step 1: Start the Backend &amp; Verify Database Connection</h3>
+<ol>
+<li>Open PowerShell or Terminal in <code>C:\Users\SWATHI\OneDrive\Desktop\vibetune\backend</code>.</li>
+<li>Run:
+   <code>powershell
+   node server.js</code></li>
+<li>Show the examiner the terminal output:
+   <code>🎵 VibeTune Server is running on port 5000
+   ✅ MongoDB Atlas Connected Successfully!
+      Host:     ac-angcvti-shard-00-00.nqyyiup.mongodb.net
+      Database: vibetune_db
+      Status:   Ready for VibeTune user sessions</code></li>
+<li>Open a web browser or curl and visit: <code>http://localhost:5000/api/health</code>
+   Show the JSON response: <code>"database": { "type": "MongoDB Atlas", "status": "connected", "connected": true }</code>.</li>
+</ol>
+<h3>Step 2: Launch the VibeTune Flutter Application</h3>
+<ol>
+<li>Start the Android Emulator (<code>emulator-5554</code>) or connect an Android device.</li>
+<li>In the project root, execute:
+   <code>powershell
+   flutter run -d emulator-5554</code></li>
+<li>Observe the polished VibeTune Splash Screen transitioning to the Sign-In screen.</li>
+</ol>
+<h3>Step 3: Register a New Test Account</h3>
+<ol>
+<li>Tap <strong>Sign Up</strong>.</li>
+<li>Enter the examiner's name (e.g., <code>Examiner Test</code>), email (<code>viva_test@vibetune.com</code>), password (<code>VivaSecure2026!</code>), and confirm password.</li>
+<li>Tap <strong>Create Account</strong>.</li>
+<li>Show the success notification and automatic login transition to the Home screen.</li>
+</ol>
+<h3>Step 4: Verify Live MongoDB Atlas Persistence</h3>
+<ol>
+<li>Open your browser and navigate to <strong>MongoDB Atlas Cloud Console</strong> (<a href="https://cloud.mongodb.com">cloud.mongodb.com</a>).</li>
+<li>Log in and click <strong>Database</strong> -&gt; <strong>Browse Collections</strong>.</li>
+<li>Select database <strong><code>vibetune_db</code></strong> -&gt; collection <strong><code>users</code></strong>.</li>
+<li>Click <strong>Filter</strong> or refresh the list.</li>
+<li>Point out to the examiner:
+   - The email <code>viva_test@vibetune.com</code> is persisted.
+   - The password is <strong>NOT</strong> stored in plaintext — it is a secure 60-character bcrypt hash (<code>$2a$10$...</code>).
+   - The <code>createdAt</code> timestamp matches the current demonstration time.</li>
+</ol>
+<h3>Step 5: Demonstrate Duplicate Registration Rejection</h3>
+<ol>
+<li>In the app, sign out from Profile.</li>
+<li>Go to Sign Up and attempt to register again with <code>viva_test@vibetune.com</code>.</li>
+<li>Show the immediate red warning: <em>"An account with this email is already registered."</em></li>
+</ol>
+<h3>Step 6: Song Discovery, Playback, and Synchronized Lyrics</h3>
+<ol>
+<li>Log in with the newly registered test credentials.</li>
+<li>On the <strong>Home</strong> or <strong>Search</strong> screen, select a track (e.g., <em>Kesariya</em> or <em>Ra Ra Rakkamma</em>).</li>
+<li>Tap Play. Point out:
+   - Album artwork, track title, artist, and duration bar.
+   - Real-time seek bar updating smoothly.</li>
+<li>Tap the <strong>Lyrics</strong> button in the player bar.</li>
+<li>Show the lyrics scrolling automatically in sync with the singer's voice.</li>
+<li>Seek the slider forward 30 seconds; demonstrate how the lyrics instantly jump to the exact active line.</li>
+</ol>
+<h3>Step 7: Multilingual Lyrics Translation</h3>
+<ol>
+<li>On the lyrics screen, tap the language filter chips (e.g., switch from <strong>Original</strong> to <strong>Kannada</strong>, <strong>Telugu</strong>, or <strong>English</strong>).</li>
+<li>Show the progress indicator translating line-by-line.</li>
+<li>Demonstrate that the lines remain perfectly synchronized with playback after translation.</li>
+</ol>
+<h3>Step 8: Karaoke Mode Demonstration</h3>
+<ol>
+<li>Switch to the <strong>Karaoke</strong> tab or toggle Karaoke Mode.</li>
+<li>Show the full-screen sing-along view with large, readable fonts.</li>
+<li>Toggle between <strong>Vocal Track</strong> and <strong>Instrumental Accompaniment</strong> to hear the backing track.</li>
+<li>Demonstrate speed control (e.g., 0.8x practice mode vs 1.0x).</li>
+</ol>
+<hr />
+<h2>10. Top 25 Viva Voce Questions &amp; Simple Answers</h2>
+<h3>Q1: What is the main objective of VibeTune?</h3>
+<p><strong>Answer:</strong> VibeTune is a full-stack music application providing synchronized lyrics (LRC), on-the-fly multilingual lyric translation across Indian film languages, and a dedicated Karaoke Sing-Along mode with instrumental playback.</p>
+<h3>Q2: Why did you choose Flutter instead of native Android (Java/Kotlin)?</h3>
+<p><strong>Answer:</strong> Flutter provides a single codebase for multiple platforms with high-performance 60fps/120fps reactive rendering using Impeller/Skia, hot-reload for rapid UI iteration, and comprehensive state management using <code>ChangeNotifier</code>.</p>
+<h3>Q3: What is the technology stack used in the backend?</h3>
+<p><strong>Answer:</strong> Node.js with Express.js as the REST API framework, Mongoose as the Object Data Modeling (ODM) layer, and MongoDB Atlas as the cloud NoSQL database.</p>
+<h3>Q4: How is user authentication implemented?</h3>
+<p><strong>Answer:</strong> Authentication is stateless and token-based. Passwords are encrypted using <code>bcryptjs</code> with 10 salt rounds before saving to MongoDB. Upon successful login, the server signs a JSON Web Token (JWT) containing the user ID, which is stored in encrypted hardware storage on Android and sent in the <code>Authorization: Bearer &lt;token&gt;</code> header for protected endpoints.</p>
+<h3>Q5: Why is password hashing done on the backend rather than the frontend?</h3>
+<p><strong>Answer:</strong> Frontend hashing is susceptible to client-side reverse engineering and man-in-the-middle replay attacks. The backend controls the salt generation and hashing algorithm securely in a trusted server environment.</p>
+<h3>Q6: What does MongoDB Atlas offer over a local MongoDB instance?</h3>
+<p><strong>Answer:</strong> Atlas is a fully managed cloud database offering automated replication (3-node replica sets), high availability, encrypted storage at rest and in transit (TLS/SSL), automated backups, and global access without managing local server daemons.</p>
+<h3>Q7: What is an LRC file?</h3>
+<p><strong>Answer:</strong> LRC (LyRiCs) is a computer file format that synchronizes song lyrics with an audio file. Lines contain time tags formatted as <code>[mm:ss.xx]</code> specifying when that specific lyric should appear.</p>
+<h3>Q8: How does your LRC synchronization algorithm work?</h3>
+<p><strong>Answer:</strong> As the audio player emits playback position updates via <code>onPositionChanged</code> (every 200ms), our <code>LyricsService.getActiveLineIndex</code> algorithm compares the current <code>Duration</code> against sorted timestamps in the parsed lyric list to find the active index, triggering a notification to rebuild only the active lyric line widget and auto-scroll the view.</p>
+<h3>Q9: How do you prevent UI lag during lyric scrolling?</h3>
+<p><strong>Answer:</strong> By using <code>ScrollablePositionedList</code> / <code>ListView.builder</code> with lazy rendering, caching parsed <code>LyricLine</code> objects in memory, and avoiding full-tree rebuilds through scoped <code>Selector</code> or <code>Consumer</code> state listeners.</p>
+<h3>Q10: How does Multilingual Lyric Translation work without losing synchronization?</h3>
+<p><strong>Answer:</strong> When the user selects a target language, our <code>TranslationService</code> translates each line text individually using the API and reconstructs new <code>LyricLine</code> models that retain the exact original <code>timestamp: Duration</code>. Because timestamps are preserved, the active line highlight remains accurate.</p>
+<h3>Q11: What is LRCLIB and how is it integrated?</h3>
+<p><strong>Answer:</strong> LRCLIB is an open, crowdsourced lyrics repository. We query <code>https://lrclib.net/api/get</code> with track name, artist name, and duration. If a match is found, we parse the raw synchronized LRC string; if only plain text is available, we display it labeled as unsynchronized.</p>
+<h3>Q12: How is Karaoke Mode implemented?</h3>
+<p><strong>Answer:</strong> Each song in our catalog contains links to both the standard vocal audio track and an authentic instrumental/backing track. Toggling Karaoke Mode switches the player source to the instrumental track, pauses the current position, switches audio buffers, resumes playback at the exact elapsed millisecond, and presents large-format sing-along typography.</p>
+<h3>Q13: Why did you use <code>10.0.2.2</code> instead of <code>localhost</code> for API calls in the Flutter app?</h3>
+<p><strong>Answer:</strong> In the standard Android Emulator, <code>localhost</code> (127.0.0.1) refers to the virtual device's own loopback interface. The special alias <code>10.0.2.2</code> is provided by the Android emulator router to redirect traffic to the development computer's host loopback network.</p>
+<h3>Q14: How does VibeTune handle network security on Android?</h3>
+<p><strong>Answer:</strong> Android 9+ blocks cleartext HTTP by default. We implemented a custom <code>network_security_config.xml</code> that permits cleartext HTTP communication strictly for local development domains (<code>10.0.2.2</code>, <code>127.0.0.1</code>, <code>localhost</code>) while enforcing HTTPS for all production external APIs.</p>
+<h3>Q15: How are tokens stored on the client side?</h3>
+<p><strong>Answer:</strong> Tokens are stored using <code>FlutterSecureStorage</code>, which internally uses the Android KeyStore and <code>EncryptedSharedPreferences</code> backed by AES-256 hardware encryption.</p>
+<h3>Q16: What happens if the backend server is unreachable when the user opens the app?</h3>
+<p><strong>Answer:</strong> The app uses cached session credentials from <code>SharedPreferences</code> to allow offline music playback of local library tracks, displaying an informative offline banner rather than crashing.</p>
+<h3>Q17: What HTTP status codes are used across your REST APIs?</h3>
+<p><strong>Answer:</strong>
+- <code>200 OK</code>: Successful login, profile retrieval, health check.
+- <code>201 Created</code>: Successful user registration.
+- <code>400 Bad Request</code>: Missing fields, duplicate email, invalid password length.
+- <code>401 Unauthorized</code>: Missing, expired, or invalid JWT token.
+- <code>503 Service Unavailable</code>: Server running but database disconnected.</p>
+<h3>Q18: What is Mongoose and why was it chosen?</h3>
+<p><strong>Answer:</strong> Mongoose is an ODM (Object Data Modeling) library for MongoDB and Node.js. It provides schema definitions, type casting, pre-save middleware hooks (used for password hashing), and built-in validation.</p>
+<h3>Q19: Explain the pre-save hook in your User model.</h3>
+<p><strong>Answer:</strong> In <code>User.js</code>, <code>userSchema.pre('save', async function() { ... })</code> checks <code>this.isModified('password')</code>. If true, it generates a salt with <code>bcrypt.genSalt(10)</code> and hashes the password before writing to MongoDB, ensuring plain text is never persisted.</p>
+<h3>Q20: How do you handle duplicate email registrations?</h3>
+<p><strong>Answer:</strong> The User schema defines <code>email</code> with <code>unique: true</code> and <code>lowercase: true</code>. Additionally, the registration controller performs an explicit <code>User.findOne({ email })</code> check, returning an HTTP 400 error message if the address is already registered.</p>
+<h3>Q21: What are the primary state management providers in VibeTune?</h3>
+<p><strong>Answer:</strong>
+1. <code>AuthService</code>: Manages user authentication state, tokens, and active profile.
+2. <code>AudioPlayerService</code>: Controls playback, seeking, volume, lyrics synchronization, and karaoke toggling.
+3. <code>PlaylistService</code>: Manages catalog filtering, search queries, favorites, and playback queues.</p>
+<h3>Q22: What unit tests did you implement?</h3>
+<p><strong>Answer:</strong> We implemented 21 automated tests covering:
+- LRC timestamp parsing (2-digit and 3-digit millisecond formats, non-chronological sorting, malformed tag rejection).
+- Active line index determination during linear playback and random seeking.
+- Timestamp preservation during multilingual translation.
+- Song catalog validation (50+ songs across 5 Indian languages).
+- Playlist searching, genre filtering, and favorites toggling.
+- JWT token validation and guest-mode continuation.</p>
+<h3>Q23: How is audio played inside Flutter?</h3>
+<p><strong>Answer:</strong> We use the <code>audioplayers</code> package, which interfaces with native Android <code>MediaPlayer</code> and <code>ExoPlayer</code> platforms to deliver hardware-accelerated audio decoding.</p>
+<h3>Q24: What are the current limitations of VibeTune?</h3>
+<p><strong>Answer:</strong>
+1. Machine-translated lyrics depend on third-party translation API quotas.
+2. Instrumental tracks require verified backing audio in the catalog; real-time on-device AI vocal removal is computationally intensive on mobile chipsets.</p>
+<h3>Q25: What future enhancements can be added to VibeTune?</h3>
+<p><strong>Answer:</strong>
+1. On-device AI vocal stem separation using TensorFlow Lite (Spleeter / Demucs models).
+2. Real-time microphone audio capture with pitch scoring and vocal performance grading.
+3. Offline song and lyrics download cache with encrypted local storage.
+4. Social collaborative playlists and friend activity feeds.</p>
+<hr />
+<h2>11. Verification &amp; Command Reference</h2>
+<h3>Starting the Node.js / MongoDB Backend</h3>
+<pre><code class="language-powershell">cd C:\Users\SWATHI\OneDrive\Desktop\vibetune\backend
+node server.js
+</code></pre>
+<h3>Running the Flutter Automated Test Suite</h3>
+<pre><code class="language-powershell">cd C:\Users\SWATHI\OneDrive\Desktop\vibetune
+flutter test
+</code></pre>
+<h3>Running Static Analysis</h3>
+<pre><code class="language-powershell">cd C:\Users\SWATHI\OneDrive\Desktop\vibetune
+dart analyze
+</code></pre>
+<h3>Building Debug APK</h3>
+<pre><code class="language-powershell">cd C:\Users\SWATHI\OneDrive\Desktop\vibetune
+flutter build apk --debug
+# Output location: build\app\outputs\flutter-apk\app-debug.apk
+</code></pre>
+<h3>Launching on Android Emulator</h3>
+<pre><code class="language-powershell">cd C:\Users\SWATHI\OneDrive\Desktop\vibetune
+flutter run -d emulator-5554
+</code></pre>
+    </div>
+
+</body>
+</html>
