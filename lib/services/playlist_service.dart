@@ -9,7 +9,7 @@ class PlaylistService extends ChangeNotifier {
   final List<Song> _allSongs = List.from(SongCatalog.allSongs);
   List<Song> _currentQueue = [];
   int _currentIndex = 0;
-  final Set<String> _favoriteSongIds = {'vt_exclusive_01', 'hi_01', 'ka_01', 'te_01', 'ta_01', 'ml_01'};
+  final Set<String> _favoriteSongIds = {'hi_01', 'ka_01', 'te_01', 'ta_01'};
   final List<Song> _recentlyPlayed = [];
   String _selectedLanguage = 'All';
   String _searchQuery = '';
