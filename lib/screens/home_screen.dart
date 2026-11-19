@@ -20,11 +20,8 @@ class HomeScreen extends StatelessWidget {
     final playlist = context.watch<PlaylistService>();
     final audio = context.watch<AudioPlayerService>();
 
-    final featuredSong = SongCatalog.allSongs.first;
+    final featuredSong = SongCatalog.allSongs.isNotEmpty ? SongCatalog.allSongs.first : null;
     final userName = auth.currentUser?.name ?? 'Guest Explorer';
-
-    // YouTube verified tracks for streaming shelf
-    final youtubeTracks = playlist.allSongs.where((s) => s.isYouTubeTrack).toList();
 
     return Scaffold(
       backgroundColor: palette.background,
@@ -123,11 +120,12 @@ class HomeScreen extends StatelessWidget {
             ),
 
             // Hero Featured Spotlight Card
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Container(
-                  height: 220,
+            if (featuredSong != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Container(
+                    height: 220,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
@@ -284,7 +282,43 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
+            )
+            else
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Container(
+                    height: 140,
+                    decoration: BoxDecoration(
+                      color: palette.surface,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: palette.border),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.queue_music_rounded, size: 36, color: palette.primary),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Ready for Your Songs',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: palette.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Previous songs removed. Ready to add your songs!',
+                            style: TextStyle(fontSize: 12, color: palette.textMuted),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
 
             // Horizontal Language Selector Chips
             SliverToBoxAdapter(
@@ -329,279 +363,85 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-            // Shelf 1: Karaoke Ready Tracks Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.mic_external_on_rounded, color: palette.karaokeAccent, size: 20),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Karaoke Ready Tracks',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: palette.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      '${playlist.karaokeSongs.length} Songs',
-                      style: TextStyle(fontSize: 12, color: palette.textMuted),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // Language-Divided Sections & Karaoke Ready Shelf
 
-            // Shelf 1: Horizontal Karaoke Cards
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 155,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: playlist.karaokeSongs.take(8).length,
-                  itemBuilder: (context, index) {
-                    final song = playlist.karaokeSongs[index];
-                    return GestureDetector(
-                      onTap: () {
-                        playlist.playSong(song, audio, mode: PlaybackMode.karaoke);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const FullPlayerScreen(startInKaraoke: true),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: 135,
-                        margin: const EdgeInsets.only(right: 12),
-                        decoration: BoxDecoration(
-                          color: palette.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: palette.border,
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            if (!palette.isDark)
-                              BoxShadow(
-                                color: Colors.black.withAlpha(8),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                                  child: Container(
-                                    height: 88,
-                                    width: double.infinity,
-                                    color: palette.surfaceHover,
-                                    child: Image.asset(song.coverImage, fit: BoxFit.cover),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withAlpha(180),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.mic_rounded,
-                                      size: 13,
-                                      color: palette.karaokeAccent,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    song.title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: palette.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    song.language,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: palette.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+            // 1. Karaoke Ready Shelf (Featured if 'All' or if karaoke songs available)
+            if (playlist.selectedLanguage == 'All' && playlist.karaokeSongs.isNotEmpty) ...[
+              _buildShelfHeader(
+                palette,
+                title: 'Karaoke Ready Tracks',
+                icon: Icons.mic_external_on_rounded,
+                iconColor: palette.karaokeAccent,
+                count: playlist.karaokeSongs.length,
               ),
-            ),
-
-            // Shelf 2: Trending Commercial Hits (YouTube Verified Streams)
-            if (youtubeTracks.isNotEmpty) ...[
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.play_circle_fill_rounded, color: Colors.redAccent, size: 20),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Official YouTube Streams',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: palette.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        '${youtubeTracks.length} Tracks',
-                        style: TextStyle(fontSize: 12, color: palette.textMuted),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 155,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: youtubeTracks.length,
-                    itemBuilder: (context, index) {
-                      final song = youtubeTracks[index];
-                      return GestureDetector(
-                        onTap: () {
-                          playlist.playSong(song, audio);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const FullPlayerScreen()),
-                          );
-                        },
-                        child: Container(
-                          width: 135,
-                          margin: const EdgeInsets.only(right: 12),
-                          decoration: BoxDecoration(
-                            color: palette.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: palette.border,
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              if (!palette.isDark)
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(8),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Stack(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                                    child: Container(
-                                      height: 88,
-                                      width: double.infinity,
-                                      color: palette.surfaceHover,
-                                      child: Image.asset(song.coverImage, fit: BoxFit.cover),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 6,
-                                    right: 6,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withAlpha(180),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.smart_display_rounded,
-                                        size: 13,
-                                        color: Colors.redAccent,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      song.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: palette.textPrimary,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      song.language,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: palette.textSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+              _buildSongHorizontalList(
+                context: context,
+                palette: palette,
+                playlist: playlist,
+                audio: audio,
+                songs: playlist.karaokeSongs,
+                isKaraoke: true,
               ),
             ],
 
-            // Section 3: Indian Music Library Header
+            // 2. Hindi Melodies Shelf (if 'All' or 'Hindi')
+            if ((playlist.selectedLanguage == 'All' || playlist.selectedLanguage == 'Hindi') &&
+                playlist.hindiSongs.isNotEmpty) ...[
+              _buildShelfHeader(
+                palette,
+                title: 'Hindi Melodies',
+                icon: Icons.music_note_rounded,
+                iconColor: Colors.deepOrangeAccent,
+                count: playlist.hindiSongs.length,
+              ),
+              _buildSongHorizontalList(
+                context: context,
+                palette: palette,
+                playlist: playlist,
+                audio: audio,
+                songs: playlist.hindiSongs,
+              ),
+            ],
+
+            // 3. Kannada Classics Shelf (if 'All' or 'Kannada')
+            if ((playlist.selectedLanguage == 'All' || playlist.selectedLanguage == 'Kannada') &&
+                playlist.kannadaSongs.isNotEmpty) ...[
+              _buildShelfHeader(
+                palette,
+                title: 'Kannada Classics',
+                icon: Icons.audiotrack_rounded,
+                iconColor: Colors.amberAccent,
+                count: playlist.kannadaSongs.length,
+              ),
+              _buildSongHorizontalList(
+                context: context,
+                palette: palette,
+                playlist: playlist,
+                audio: audio,
+                songs: playlist.kannadaSongs,
+              ),
+            ],
+
+            // 4. Tamil Hits Shelf (if 'All' or 'Tamil')
+            if ((playlist.selectedLanguage == 'All' || playlist.selectedLanguage == 'Tamil') &&
+                playlist.tamilSongs.isNotEmpty) ...[
+              _buildShelfHeader(
+                palette,
+                title: 'Tamil Hits',
+                icon: Icons.album_rounded,
+                iconColor: Colors.cyanAccent,
+                count: playlist.tamilSongs.length,
+              ),
+              _buildSongHorizontalList(
+                context: context,
+                palette: palette,
+                playlist: playlist,
+                audio: audio,
+                songs: playlist.tamilSongs,
+              ),
+            ],
+
+            // Section 5: All Songs / Filtered Library Header
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(18, 20, 18, 8),
@@ -611,11 +451,11 @@ class HomeScreen extends StatelessWidget {
                     Row(
                       children: [
                         Icon(Icons.library_music_rounded, color: palette.primary, size: 20),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         Text(
                           playlist.selectedLanguage == 'All'
-                              ? 'Indian Music Library'
-                              : '${playlist.selectedLanguage} Hits',
+                              ? 'All Songs Library'
+                              : '${playlist.selectedLanguage} Tracks',
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
@@ -624,9 +464,21 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Text(
-                      '${playlist.filteredSongs.length} Tracks',
-                      style: TextStyle(fontSize: 12, color: palette.textMuted),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: palette.surfaceElevated,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: palette.border, width: 0.8),
+                      ),
+                      child: Text(
+                        '${playlist.filteredSongs.length} Tracks',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: palette.textMuted,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -634,30 +486,257 @@ class HomeScreen extends StatelessWidget {
             ),
 
             // Songs List (Real Playable Items)
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final song = playlist.filteredSongs[index];
-                  return SongTileWidget(
-                    song: song,
-                    onTap: () {
-                      playlist.playSong(song, audio);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const FullPlayerScreen()),
-                      );
-                    },
-                  );
-                },
-                childCount: playlist.filteredSongs.length,
+            if (playlist.filteredSongs.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 36),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(Icons.music_off_rounded, size: 36, color: palette.textMuted),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No songs found matching your selection.',
+                          style: TextStyle(color: palette.textMuted, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final song = playlist.filteredSongs[index];
+                    return SongTileWidget(
+                      song: song,
+                      onTap: () {
+                        playlist.playSong(song, audio);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const FullPlayerScreen()),
+                        );
+                      },
+                    );
+                  },
+                  childCount: playlist.filteredSongs.length,
+                ),
               ),
-            ),
 
             // Bottom space for floating mini player
             const SliverToBoxAdapter(
               child: SizedBox(height: 120),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShelfHeader(
+    AppPalette palette, {
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required int count,
+  }) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: iconColor, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: palette.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: palette.surfaceElevated,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: palette.border, width: 0.8),
+              ),
+              child: Text(
+                '$count Songs',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: palette.textMuted,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSongHorizontalList({
+    required BuildContext context,
+    required AppPalette palette,
+    required PlaylistService playlist,
+    required AudioPlayerService audio,
+    required List<Song> songs,
+    bool isKaraoke = false,
+  }) {
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 160,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: songs.length,
+          itemBuilder: (context, index) {
+            final song = songs[index];
+            return GestureDetector(
+              onTap: () {
+                if (isKaraoke) {
+                  playlist.playSong(song, audio, mode: PlaybackMode.karaoke);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const FullPlayerScreen(startInKaraoke: true),
+                    ),
+                  );
+                } else {
+                  playlist.playSong(song, audio, mode: PlaybackMode.normal);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const FullPlayerScreen()),
+                  );
+                }
+              },
+              child: Container(
+                width: 140,
+                margin: const EdgeInsets.only(right: 12),
+                decoration: BoxDecoration(
+                  color: palette.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isKaraoke
+                        ? palette.karaokeAccent.withAlpha(80)
+                        : palette.border,
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    if (!palette.isDark)
+                      BoxShadow(
+                        color: Colors.black.withAlpha(8),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                          child: Container(
+                            height: 90,
+                            width: double.infinity,
+                            color: palette.surfaceHover,
+                            child: Image.asset(
+                              song.coverImage,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Container(
+                                color: palette.surfaceHover,
+                                child: Center(
+                                  child: Icon(
+                                    isKaraoke ? Icons.mic_rounded : Icons.music_note_rounded,
+                                    color: palette.primary,
+                                    size: 32,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 6,
+                          right: 6,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withAlpha(180),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isKaraoke ? Icons.mic_rounded : Icons.play_arrow_rounded,
+                              size: 13,
+                              color: isKaraoke ? palette.karaokeAccent : palette.primary,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 6,
+                          left: 6,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withAlpha(180),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              song.language,
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 6, 8, 4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            song.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: palette.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            song.artist,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: palette.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

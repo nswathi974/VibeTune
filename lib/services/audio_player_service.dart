@@ -308,6 +308,7 @@ class AudioPlayerService extends ChangeNotifier {
   /// Toggles Play / Pause across all source types
   Future<void> togglePlayPause() async {
     if (_activeAdapter == null || _currentSong == null) {
+      if (SongCatalog.allSongs.isEmpty) return;
       final firstPlayable = SongCatalog.allSongs.firstWhere(
         (s) => s.isPlayable && (s.normalAudioPath.isNotEmpty || s.isYouTubeTrack),
         orElse: () => SongCatalog.allSongs.first,

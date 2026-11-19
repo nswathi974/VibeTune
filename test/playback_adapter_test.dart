@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vibetune/data/song_catalog.dart';
 import 'package:vibetune/models/song_model.dart';
 import 'package:vibetune/services/audio_player_service.dart';
 import 'package:vibetune/services/playback/playback_adapter.dart';
@@ -79,10 +78,22 @@ void main() {
       expect(audioService.youtubeController, isNull);
     });
 
-    test('AudioPlayerService unplayable commercial songs fail gracefully with honest notice', () async {
+    test('AudioPlayerService unplayable songs fail gracefully with honest notice', () async {
       final audioService = AudioPlayerService();
-      final songs = SongCatalog.allSongs;
-      final unplayableSong = songs.firstWhere((s) => !s.isPlayable && !s.isYouTubeTrack);
+      const unplayableSong = Song(
+        id: 'unplayable_test',
+        title: 'Unplayable Song',
+        artist: 'Test Artist',
+        movieOrAlbum: 'Test Album',
+        language: 'Hindi',
+        coverImage: 'assets/images/featured_cover.jpg',
+        normalAudioPath: '',
+        duration: Duration(minutes: 3),
+        year: 2024,
+        genre: 'Pop',
+        isPlayable: false,
+        audioSourceNotice: 'Commercial audio streaming rights reserved by label.',
+      );
 
       await audioService.playSong(unplayableSong);
 

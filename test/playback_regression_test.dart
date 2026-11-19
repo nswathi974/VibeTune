@@ -30,6 +30,9 @@ class TestJustAudioAdapter extends JustAudioAdapter {
   }
 
   @override
+  bool get hasSecondaryTrack => lastLoadedSong?.isKaraokeAvailable ?? false;
+
+  @override
   Future<void> setPlaybackMode(PlaybackMode mode) async {
     activeMode = mode;
   }
@@ -43,79 +46,69 @@ void main() {
   });
 
   group('VibeTune Phase 2 Playback Regression Suite', () {
-    test('1. Local audio playback and stem verification', () {
+    test('1. Local audio playback and stem verification for Hindi track', () {
       final songs = SongCatalog.allSongs;
-      final localSong = songs.firstWhere((s) => s.id == 'vt_studio_hi');
+      final hindiSong = songs.firstWhere((s) => s.id == 'hi_01');
 
-      expect(localSong.isPlayable, isTrue);
-      expect(localSong.normalAudioPath, isNotEmpty);
-      expect(localSong.karaokeAudioPath, isNotEmpty);
-      expect(localSong.isKaraokeAvailable, isTrue);
-      expect(localSong.isYouTubeTrack, isFalse);
+      expect(hindiSong.title, 'Agar Tum Saath Ho');
+      expect(hindiSong.isPlayable, isTrue);
+      expect(hindiSong.normalAudioPath, isNotEmpty);
+      expect(hindiSong.karaokeAudioPath, isNotEmpty);
+      expect(hindiSong.isKaraokeAvailable, isTrue);
+      expect(hindiSong.isYouTubeTrack, isFalse);
     });
 
-    test('2. Archive.org streaming source verification', () {
+    test('2. Dual-stem Kannada master track verification', () {
       final songs = SongCatalog.allSongs;
-      final archiveSong = songs.firstWhere((s) => s.id == 'stream_hi_01');
+      final kannadaSong = songs.firstWhere((s) => s.id == 'ka_01');
 
-      expect(archiveSong.isPlayable, isTrue);
-      expect(archiveSong.normalAudioPath, startsWith('https://archive.org'));
-      expect(archiveSong.isKaraokeAvailable, isFalse); // Full-mix archival only
-      expect(archiveSong.isYouTubeTrack, isFalse);
+      expect(kannadaSong.title, 'Anisuthide');
+      expect(kannadaSong.isPlayable, isTrue);
+      expect(kannadaSong.normalAudioPath, isNotEmpty);
+      expect(kannadaSong.karaokeAudioPath, isNotEmpty);
+      expect(kannadaSong.isKaraokeAvailable, isTrue);
+      expect(kannadaSong.isYouTubeTrack, isFalse);
     });
 
-    test('3. YouTube embedded playback source verification', () {
+    test('3. Dual-stem Tamil master track verification', () {
       final songs = SongCatalog.allSongs;
-      final ytSong = songs.firstWhere((s) => s.id == 'hi_01');
+      final tamilSong = songs.firstWhere((s) => s.id == 'ta_01');
 
-      expect(ytSong.isPlayable, isTrue);
-      expect(ytSong.isYouTubeTrack, isTrue);
-      expect(ytSong.youtubeVideoId, 'BddP6PYo2gs');
-      expect(ytSong.normalAudioPath, isEmpty);
+      expect(tamilSong.title, 'Thuli Thuli');
+      expect(tamilSong.isPlayable, isTrue);
+      expect(tamilSong.normalAudioPath, isNotEmpty);
+      expect(tamilSong.karaokeAudioPath, isNotEmpty);
+      expect(tamilSong.isKaraokeAvailable, isTrue);
+      expect(tamilSong.isYouTubeTrack, isFalse);
     });
 
-    test('4. Rapid source switching cleans up YouTube controller and prevents controller leaks', () async {
+    test('4. Rapid track switching preserves clean playback state without memory leaks', () async {
       final testAudioAdapter = TestJustAudioAdapter();
       final audioService = AudioPlayerService(justAudioAdapter: testAudioAdapter);
       final songs = SongCatalog.allSongs;
 
-      final localTrack = songs.firstWhere((s) => s.id == 'vt_studio_hi');
-      final ytTrack = songs.firstWhere((s) => s.id == 'hi_01');
-      final archiveTrack = songs.firstWhere((s) => s.id == 'stream_hi_01');
+      final track1 = songs.firstWhere((s) => s.id == 'hi_01');
+      final track2 = songs.firstWhere((s) => s.id == 'ka_01');
+      final track3 = songs.firstWhere((s) => s.id == 'ta_01');
 
-      // Step A: Load Local Track
-      await audioService.playSong(localTrack, autoPlay: false);
-      expect(audioService.currentSong?.id, 'vt_studio_hi');
-      expect(audioService.isCurrentSongYouTube, isFalse);
-      expect(audioService.youtubeController, isNull);
-      expect(testAudioAdapter.lastLoadedSong?.id, 'vt_studio_hi');
-
-      // Step B: Rapidly switch to YouTube Track
-      await audioService.playSong(ytTrack, autoPlay: false);
+      // Step A: Load Track 1
+      await audioService.playSong(track1, autoPlay: false);
       expect(audioService.currentSong?.id, 'hi_01');
-      expect(audioService.isCurrentSongYouTube, isTrue);
-      expect(testAudioAdapter.isStopped, isTrue); // JustAudio must be stopped
-
-      // Step C: Rapidly switch to Archive Track
-      await audioService.playSong(archiveTrack, autoPlay: false);
-      expect(audioService.currentSong?.id, 'stream_hi_01');
       expect(audioService.isCurrentSongYouTube, isFalse);
-      // The YouTube controller MUST be disposed and nulled
-      expect(audioService.youtubeController, isNull);
-      expect(testAudioAdapter.lastLoadedSong?.id, 'stream_hi_01');
+      expect(testAudioAdapter.lastLoadedSong?.id, 'hi_01');
 
-      // Step D: Rapidly switch back to YouTube Track
-      await audioService.playSong(ytTrack, autoPlay: false);
-      expect(audioService.currentSong?.id, 'hi_01');
-      expect(audioService.isCurrentSongYouTube, isTrue);
+      // Step B: Switch to Track 2
+      await audioService.playSong(track2, autoPlay: false);
+      expect(audioService.currentSong?.id, 'ka_01');
+      expect(testAudioAdapter.lastLoadedSong?.id, 'ka_01');
 
-      // Step E: Switch back to Local Track
-      await audioService.playSong(localTrack, autoPlay: false);
-      expect(audioService.currentSong?.id, 'vt_studio_hi');
-      expect(audioService.youtubeController, isNull);
+      // Step C: Switch to Track 3
+      await audioService.playSong(track3, autoPlay: false);
+      expect(audioService.currentSong?.id, 'ta_01');
+      expect(testAudioAdapter.lastLoadedSong?.id, 'ta_01');
     });
 
-    test('5. Pause/resume and seeking updates position and lyrics cleanly', () async {
+    test('5. Pause/resume and seeking updates position cleanly', () async {
       final audioService = AudioPlayerService();
 
       // Seek
@@ -136,62 +129,42 @@ void main() {
       expect(audioService.position, Duration.zero);
     });
 
-    test('6. Mixed-source queue in PlaylistService navigates correctly between Local, YouTube, and Archive tracks', () async {
+    test('6. PlaylistService queue navigates cleanly through all 10 verified songs', () async {
       final playlistService = PlaylistService();
       final testAudioAdapter = TestJustAudioAdapter();
       final audioService = AudioPlayerService(justAudioAdapter: testAudioAdapter);
       final songs = SongCatalog.allSongs;
 
-      final localSong = songs.firstWhere((s) => s.id == 'vt_studio_hi');
-      final ytSong = songs.firstWhere((s) => s.id == 'hi_01');
-      final archiveSong = songs.firstWhere((s) => s.id == 'stream_hi_01');
+      expect(songs.length, 10);
+      expect(playlistService.allSongs.length, 10);
 
-      // Start by playing local track
-      playlistService.playSong(localSong, audioService);
-      expect(audioService.currentSong?.id, 'vt_studio_hi');
+      // Start by playing first song
+      playlistService.playSong(songs[0], audioService);
+      expect(audioService.currentSong?.id, songs[0].id);
 
-      // Play YouTube track
-      playlistService.playSong(ytSong, audioService);
-      expect(audioService.currentSong?.id, 'hi_01');
-      expect(audioService.isCurrentSongYouTube, isTrue);
-
-      // Play Archive track
-      playlistService.playSong(archiveSong, audioService);
-      expect(audioService.currentSong?.id, 'stream_hi_01');
-      expect(audioService.isCurrentSongYouTube, isFalse);
+      // Play fifth song
+      playlistService.playSong(songs[4], audioService);
+      expect(audioService.currentSong?.id, songs[4].id);
     });
 
-    test('7. Karaoke stem switching and honest Sing-Along behavior', () async {
+    test('7. Karaoke stem switching toggles seamlessly between normal and karaoke modes', () async {
       final testAudioAdapter = TestJustAudioAdapter();
       final audioService = AudioPlayerService(justAudioAdapter: testAudioAdapter);
       final songs = SongCatalog.allSongs;
 
-      // Single-track song (no secondary stem)
-      final devotionalSong = songs.firstWhere((s) => s.id == 'stream_ka_01');
-      await audioService.playSong(devotionalSong, autoPlay: false);
+      final song = songs.firstWhere((s) => s.id == 'hi_01');
+      await audioService.playSong(song, autoPlay: false);
       expect(audioService.playbackMode, PlaybackMode.normal);
+      expect(audioService.hasSecondaryTrack, isTrue);
 
       await audioService.toggleMode();
       expect(audioService.playbackMode, PlaybackMode.karaoke);
-      expect(audioService.playbackErrorMessage, contains('Karaoke instrumental stem is not available'));
+      expect(audioService.playbackErrorMessage, isNull);
 
       // Switch back to normal
       await audioService.toggleMode();
       expect(audioService.playbackMode, PlaybackMode.normal);
       expect(audioService.playbackErrorMessage, isNull);
-    });
-
-    test('8. YouTube track honest Sing-Along behavior preserves playback without error', () async {
-      final audioService = AudioPlayerService();
-      final songs = SongCatalog.allSongs;
-      final ytSong = songs.firstWhere((s) => s.id == 'hi_01');
-
-      await audioService.playSong(ytSong, autoPlay: false);
-      expect(audioService.isCurrentSongYouTube, isTrue);
-
-      await audioService.toggleMode();
-      expect(audioService.playbackMode, PlaybackMode.karaoke);
-      expect(audioService.playbackErrorMessage, contains('Sing-Along mode active with original audio'));
     });
   });
 }

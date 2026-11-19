@@ -23,7 +23,7 @@ void main() {
         '_id': '64a000000000000000000010',
         'name': 'Telugu Classics',
         'description': 'Handpicked melodies',
-        'songs': ['vt_studio_te', 'c_telugu_01'],
+        'songs': ['stream_te_02', 'hi_01'],
         'createdAt': '2026-11-12T05:00:00.000Z',
         'updatedAt': '2026-11-12T05:15:00.000Z',
       };
@@ -33,7 +33,7 @@ void main() {
       expect(model.id, equals('64a000000000000000000010'));
       expect(model.name, equals('Telugu Classics'));
       expect(model.description, equals('Handpicked melodies'));
-      expect(model.songIds, equals(['vt_studio_te', 'c_telugu_01']));
+      expect(model.songIds, equals(['stream_te_02', 'hi_01']));
       expect(model.songCount, equals(2));
       expect(model.createdAt, isNotNull);
       expect(model.updatedAt, isNotNull);
@@ -45,7 +45,7 @@ void main() {
         id: 'pl_test',
         name: 'Karaoke Practice',
         description: 'Vocal warmups',
-        songIds: const ['vt_studio_hi', 'vt_studio_ka'],
+        songIds: const ['stream_hi_01', 'stream_ka_02'],
         createdAt: now,
         updatedAt: now,
       );
@@ -55,7 +55,7 @@ void main() {
       expect(json['id'], equals('pl_test'));
       expect(json['name'], equals('Karaoke Practice'));
       expect(json['description'], equals('Vocal warmups'));
-      expect(json['songs'], equals(['vt_studio_hi', 'vt_studio_ka']));
+      expect(json['songs'], equals(['stream_hi_01', 'stream_ka_02']));
       expect(json['createdAt'], equals('2026-11-12T05:00:00.000Z'));
     });
 

@@ -15,8 +15,8 @@ void main() {
     test('parses completed separation job JSON correctly', () {
       final json = {
         'jobId': 'sep_test_123',
-        'songId': 'vt_studio_hi',
-        'songTitle': 'VibeTune Hindi Studio Melody',
+        'songId': 'stream_ka_01',
+        'songTitle': 'Bhagyada Lakshmi Baramma',
         'status': 'completed',
         'progress': 100,
         'instrumentalUrl': '/media/separated/sep_test_123_instrumental.mp3',
@@ -27,7 +27,7 @@ void main() {
 
       final job = SeparationJobModel.fromJson(json);
       expect(job.jobId, 'sep_test_123');
-      expect(job.songId, 'vt_studio_hi');
+      expect(job.songId, 'stream_ka_01');
       expect(job.status, 'completed');
       expect(job.isCompleted, isTrue);
       expect(job.isProcessing, isFalse);
@@ -42,8 +42,8 @@ void main() {
     test('parses processing job JSON correctly', () {
       final json = {
         'jobId': 'sep_test_456',
-        'songId': 'vt_studio_te',
-        'songTitle': 'VibeTune Tollywood Beat',
+        'songId': 'stream_te_02',
+        'songTitle': 'Ksheerabdhi Kanyaka',
         'status': 'processing',
         'progress': 40,
         'cached': false,
@@ -60,7 +60,7 @@ void main() {
     test('parses failed job JSON correctly with error message', () {
       final json = {
         'jobId': 'sep_test_789',
-        'songId': 'c_hindi_01',
+        'songId': 'hi_01',
         'songTitle': 'Kesariya',
         'status': 'failed',
         'progress': 0,

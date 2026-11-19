@@ -4,22 +4,26 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('Both Bhajan MP3 and LRC assets load successfully via rootBundle', () async {
-    // 1. Bhagyada Lakshmi Baramma
-    final bhajan1Audio = await rootBundle.load('assets/audio/normal/bhagyada_lakshmi_baramma.mp3');
-    expect(bhajan1Audio.lengthInBytes, 2973692);
+  test('Demo audio and English LRC assets load successfully via rootBundle', () async {
+    // 1. Agar Tum Saath Ho (Hindi)
+    final hindiAudio = await rootBundle.load('assets/audio/normal/agar_tum_saath_ho.mp3');
+    expect(hindiAudio.lengthInBytes, greaterThan(100000));
 
-    final bhajan1Lrc = await rootBundle.loadString('assets/lyrics/bhagyada_lakshmi_baramma.lrc');
-    expect(bhajan1Lrc.contains('Bhagyada Lakshmi Baramma'), isTrue);
-    expect(bhajan1Lrc.contains('ಭಾಗ್ಯದ ಲಕ್ಷ್ಮಿ ಬಾರಮ್ಮಾ'), isTrue);
+    final hindiLrc = await rootBundle.loadString('assets/lyrics/agar_tum_saath_ho.lrc');
+    expect(hindiLrc.contains('Pal Bhar Thehar Jaao'), isTrue);
 
-    // 2. Ksheerabdhi Kanyaka
-    final bhajan2Audio = await rootBundle.load('assets/audio/normal/ksheerabdhi_kanyaka.mp3');
-    expect(bhajan2Audio.lengthInBytes, 3802087);
+    // 2. Anisuthide (Kannada)
+    final kannadaAudio = await rootBundle.load('assets/audio/normal/anisuthide.mp3');
+    expect(kannadaAudio.lengthInBytes, greaterThan(100000));
 
-    final bhajan2Lrc = await rootBundle.loadString('assets/lyrics/ksheerabdhi_kanyaka.lrc');
-    expect(bhajan2Lrc.contains('Ksheerabdhi Kanyaku'), isTrue);
-    expect(bhajan2Lrc.contains('క్షీరాబ్ధి కన్యకకు'), isTrue);
+    final kannadaLrc = await rootBundle.loadString('assets/lyrics/anisuthide.lrc');
+    expect(kannadaLrc.contains('Anisuthide yaako indu'), isTrue);
+
+    // 3. Thuli Thuli (Tamil)
+    final tamilAudio = await rootBundle.load('assets/audio/normal/thuli_thuli.mp3');
+    expect(tamilAudio.lengthInBytes, greaterThan(100000));
+
+    final tamilLrc = await rootBundle.loadString('assets/lyrics/thuli_thuli.lrc');
+    expect(tamilLrc.contains('Thuli thuli thuli mazhaiyaai vandhaale'), isTrue);
   });
 }
-

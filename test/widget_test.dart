@@ -4,8 +4,8 @@ import 'package:vibetune/data/song_catalog.dart';
 
 void main() {
   testWidgets('VibeTune basic smoke test', (WidgetTester tester) async {
-    // Verify song catalog has 50+ songs
-    expect(SongCatalog.allSongs.length, greaterThanOrEqualTo(50));
+    // Verify song catalog has verified songs
+    expect(SongCatalog.allSongs.length, 10);
 
     // Build our app and trigger a frame.
     await tester.pumpWidget(const VibeTuneApp());

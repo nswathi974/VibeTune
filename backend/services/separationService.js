@@ -14,61 +14,45 @@ if (!fs.existsSync(SEPARATED_DIR)) {
  * Prevents SSRF attacks and copyright infringements.
  */
 const AUTHORIZED_TRACKS = {
-  vt_studio_hi: {
-    songId: 'vt_studio_hi',
-    title: 'VibeTune Hindi Studio Melody',
-    audioRelativePath: 'assets/audio/normal/hindi_melody.wav',
-    karaokeRefPath: 'assets/audio/karaoke/hindi_melody.wav',
-    language: 'Hindi',
-    durationSeconds: 35.0,
-  },
-  vt_studio_ka: {
-    songId: 'vt_studio_ka',
-    title: 'VibeTune Sandalwood Melody',
-    audioRelativePath: 'assets/audio/normal/kannada_melody.wav',
-    karaokeRefPath: 'assets/audio/karaoke/kannada_melody.wav',
+  stream_ka_01: {
+    songId: 'stream_ka_01',
+    title: 'Bhagyada Lakshmi Baramma',
+    audioRelativePath: 'assets/audio/normal/bhagyada_lakshmi_baramma.mp3',
+    karaokeRefPath: 'assets/audio/karaoke/bhagyada_lakshmi_baramma_instrumental.mp3',
     language: 'Kannada',
-    durationSeconds: 35.0,
+    durationSeconds: 185.0,
   },
-  vt_studio_te: {
-    songId: 'vt_studio_te',
-    title: 'VibeTune Tollywood Beat',
-    audioRelativePath: 'assets/audio/normal/telugu_melody.wav',
-    karaokeRefPath: 'assets/audio/karaoke/telugu_melody.wav',
+  stream_te_02: {
+    songId: 'stream_te_02',
+    title: 'Ksheerabdhi Kanyaka',
+    audioRelativePath: 'assets/audio/normal/ksheerabdhi_kanyaka.mp3',
+    karaokeRefPath: 'assets/audio/karaoke/ksheerabdhi_kanyaka_instrumental.mp3',
     language: 'Telugu',
-    durationSeconds: 35.0,
+    durationSeconds: 237.0,
   },
-  vt_studio_ta: {
-    songId: 'vt_studio_ta',
-    title: 'VibeTune Kollywood Acoustic',
-    audioRelativePath: 'assets/audio/normal/tamil_melody.wav',
-    karaokeRefPath: 'assets/audio/karaoke/tamil_melody.wav',
+  stream_ta_01: {
+    songId: 'stream_ta_01',
+    title: 'Kurai Onrum Illai',
+    audioRelativePath: 'assets/audio/normal/kurai_onrum_illai.mp3',
+    karaokeRefPath: 'assets/audio/karaoke/kurai_onrum_illai_instrumental.mp3',
     language: 'Tamil',
-    durationSeconds: 35.0,
+    durationSeconds: 244.0,
   },
-  vt_studio_ml: {
-    songId: 'vt_studio_ml',
-    title: 'VibeTune Mollywood Serene',
-    audioRelativePath: 'assets/audio/normal/malayalam_melody.wav',
-    karaokeRefPath: 'assets/audio/karaoke/malayalam_melody.wav',
-    language: 'Malayalam',
-    durationSeconds: 35.0,
+  stream_hi_01: {
+    songId: 'stream_hi_01',
+    title: 'More To Giridhar Gopala',
+    audioRelativePath: 'assets/audio/normal/more_to_giridhar_gopala.mp3',
+    karaokeRefPath: 'assets/audio/karaoke/more_to_giridhar_gopala_instrumental.mp3',
+    language: 'Hindi',
+    durationSeconds: 260.0,
   },
-  vt_exclusive_01: {
-    songId: 'vt_exclusive_01',
-    title: 'Neon Raga (VibeTune Anthem)',
-    audioRelativePath: 'assets/audio/normal/hindi_melody.wav',
-    karaokeRefPath: 'assets/audio/karaoke/hindi_melody.wav',
-    language: 'Pan-Indian',
-    durationSeconds: 35.0,
-  },
-  vt_exclusive_02: {
-    songId: 'vt_exclusive_02',
-    title: 'VibeTune Sing-Along Party',
-    audioRelativePath: 'assets/audio/normal/kannada_melody.wav',
-    karaokeRefPath: 'assets/audio/karaoke/kannada_melody.wav',
-    language: 'Pan-Indian',
-    durationSeconds: 35.0,
+  stream_ka_02: {
+    songId: 'stream_ka_02',
+    title: 'Sharanu Siddhi Vinayaka',
+    audioRelativePath: 'assets/audio/normal/sharanu_siddhi_vinayaka.mp3',
+    karaokeRefPath: 'assets/audio/karaoke/sharanu_siddhi_vinayaka_instrumental.mp3',
+    language: 'Kannada',
+    durationSeconds: 302.0,
   },
 };
 
@@ -253,10 +237,43 @@ class SeparationService {
       return { valid: false, reason: 'Invalid song ID provided' };
     }
 
+    const authorized = AUTHORIZED_TRACKS[songId];
+    if (authorized) {
+      // Resolve physical file on disk
+      const projectRoot = path.join(__dirname, '..', '..');
+      const fullAudioPath = path.join(projectRoot, authorized.audioRelativePath);
+
+      if (!fs.existsSync(fullAudioPath)) {
+        return {
+          valid: false,
+          reason: `Audio source file does not exist on server at ${authorized.audioRelativePath}`,
+        };
+      }
+
+      const stat = fs.statSync(fullAudioPath);
+      // Limit to <= 15 MB
+      if (stat.size > 15 * 1024 * 1024) {
+        return {
+          valid: false,
+          reason: 'Audio file exceeds 15MB limit for cloud AI processing',
+        };
+      }
+
+      return {
+        valid: true,
+        trackInfo: authorized,
+        fullAudioPath,
+        fileSizeBytes: stat.size,
+      };
+    }
+
     // Explicit check for commercial tracks
     if (
       songId.startsWith('c_') ||
-      songId.startsWith('stream_') ||
+      songId.startsWith('hi_') ||
+      songId.startsWith('ka_') ||
+      songId.startsWith('te_') ||
+      songId.startsWith('ta_') ||
       songId.includes('commercial')
     ) {
       return {
@@ -267,28 +284,12 @@ class SeparationService {
       };
     }
 
-    const authorized = AUTHORIZED_TRACKS[songId];
-    if (!authorized) {
-      return {
-        valid: false,
-        reason:
-          'Unauthorized song source. Arbitrary URLs or uncatalogued tracks cannot be submitted to the AI separation engine.',
-      };
-    }
-
-    // Resolve physical file on disk
-    const projectRoot = path.join(__dirname, '..', '..');
-    const fullAudioPath = path.join(projectRoot, authorized.audioRelativePath);
-
-    if (!fs.existsSync(fullAudioPath)) {
-      return {
-        valid: false,
-        reason: `Audio source file does not exist on server at ${authorized.audioRelativePath}`,
-      };
-    }
-
-    const stat = fs.statSync(fullAudioPath);
-    // Limit to <= 15 MB
+    return {
+      valid: false,
+      isCommercial: false,
+      reason:
+        'Unauthorized song source. Arbitrary URLs or uncatalogued tracks cannot be submitted to the AI separation engine.',
+    };
     const maxBytes = 15 * 1024 * 1024;
     if (stat.size > maxBytes) {
       return {

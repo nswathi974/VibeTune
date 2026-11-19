@@ -14,6 +14,9 @@ class JustAudioAdapter implements PlaybackAdapter {
   final AudioPlayer _secondaryPlayer;
 
   bool _hasSecondaryTrack = false;
+  bool _isSecondaryLoaded = false;
+  String _currentVocalPath = '';
+  String _currentKaraokePath = '';
   PlaybackMode _playbackMode = PlaybackMode.normal;
   PlaybackSourceType _sourceType = PlaybackSourceType.localAsset;
   PlaybackEngineState _engineState = PlaybackEngineState.idle;
@@ -38,8 +41,11 @@ class JustAudioAdapter implements PlaybackAdapter {
 
   // Subscriptions
   StreamSubscription<PlayerState>? _primaryStateSub;
+  StreamSubscription<PlayerState>? _secondaryStateSub;
   StreamSubscription<Duration>? _primaryPositionSub;
+  StreamSubscription<Duration>? _secondaryPositionSub;
   StreamSubscription<Duration?>? _primaryDurationSub;
+  StreamSubscription<Duration?>? _secondaryDurationSub;
 
   JustAudioAdapter({AudioPlayer? primary, AudioPlayer? secondary})
       : _primaryPlayer = primary ?? AudioPlayer(),
@@ -104,23 +110,29 @@ class JustAudioAdapter implements PlaybackAdapter {
   @override
   Stream<void> get onCompletedStream => _completedController.stream;
 
+  void _handleStateChange(PlayerState state) {
+    final wasState = _engineState;
+    if (state.processingState == ProcessingState.loading ||
+        state.processingState == ProcessingState.buffering) {
+      _engineState = PlaybackEngineState.loading;
+    } else if (state.processingState == ProcessingState.completed) {
+      _engineState = PlaybackEngineState.completed;
+      _completedController.add(null);
+    } else if (state.playing) {
+      _engineState = PlaybackEngineState.playing;
+    } else {
+      _engineState = PlaybackEngineState.paused;
+    }
+
+    if (wasState != _engineState) {
+      _stateController.add(_engineState);
+    }
+  }
+
   void _initListeners() {
     _primaryStateSub = _primaryPlayer.playerStateStream.listen((state) {
-      final wasState = _engineState;
-      if (state.processingState == ProcessingState.loading ||
-          state.processingState == ProcessingState.buffering) {
-        _engineState = PlaybackEngineState.loading;
-      } else if (state.processingState == ProcessingState.completed) {
-        _engineState = PlaybackEngineState.completed;
-        _completedController.add(null);
-      } else if (state.playing) {
-        _engineState = PlaybackEngineState.playing;
-      } else {
-        _engineState = PlaybackEngineState.paused;
-      }
-
-      if (wasState != _engineState) {
-        _stateController.add(_engineState);
+      if (_playbackMode == PlaybackMode.normal) {
+        _handleStateChange(state);
       }
     }, onError: (Object error) {
       debugPrint('JustAudioAdapter primary state error: $error');
@@ -130,27 +142,41 @@ class JustAudioAdapter implements PlaybackAdapter {
       _stateController.add(_engineState);
     });
 
+    _secondaryStateSub = _secondaryPlayer.playerStateStream.listen((state) {
+      if (_playbackMode == PlaybackMode.karaoke) {
+        _handleStateChange(state);
+      }
+    }, onError: (Object error) {
+      debugPrint('JustAudioAdapter secondary state error: $error');
+    });
+
     _primaryPositionSub = _primaryPlayer.positionStream.listen((pos) {
-      if (_primaryPlayer.audioSource != null &&
+      if (_playbackMode == PlaybackMode.normal &&
+          _primaryPlayer.audioSource != null &&
           (_primaryPlayer.playing || pos > Duration.zero)) {
         _position = pos;
         _positionController.add(pos);
       }
+    });
 
-      // Real-time drift check for secondary instrumental player
-      if (_hasSecondaryTrack && isPlaying) {
-        try {
-          final secPos = _secondaryPlayer.position;
-          final drift = (pos - secPos).inMilliseconds.abs();
-          if (drift > 80) {
-            _secondaryPlayer.seek(pos);
-          }
-        } catch (_) {}
+    _secondaryPositionSub = _secondaryPlayer.positionStream.listen((pos) {
+      if (_playbackMode == PlaybackMode.karaoke &&
+          _secondaryPlayer.audioSource != null &&
+          (_secondaryPlayer.playing || pos > Duration.zero)) {
+        _position = pos;
+        _positionController.add(pos);
       }
     });
 
     _primaryDurationSub = _primaryPlayer.durationStream.listen((dur) {
-      if (dur != null && dur != _duration) {
+      if (_playbackMode == PlaybackMode.normal && dur != null && dur != _duration) {
+        _duration = dur;
+        _durationController.add(dur);
+      }
+    });
+
+    _secondaryDurationSub = _secondaryPlayer.durationStream.listen((dur) {
+      if (_playbackMode == PlaybackMode.karaoke && dur != null && dur != _duration) {
         _duration = dur;
         _durationController.add(dur);
       }
@@ -210,8 +236,18 @@ class JustAudioAdapter implements PlaybackAdapter {
     _errorMessage = null;
     _errorController.add(null);
     _hasSecondaryTrack = false;
+    _isSecondaryLoaded = false;
     _engineState = PlaybackEngineState.loading;
     _stateController.add(_engineState);
+
+    // CRITICAL: Stop previous playback immediately so browser audio elements
+    // are completely halted and do not collide with new source loads
+    try {
+      await _primaryPlayer.stop();
+    } catch (_) {}
+    try {
+      await _secondaryPlayer.stop();
+    } catch (_) {}
 
     final vocalPath = song.normalAudioPath;
     final karaokePath = (song.isKaraokeAvailable &&
@@ -219,6 +255,10 @@ class JustAudioAdapter implements PlaybackAdapter {
             song.karaokeAudioPath!.isNotEmpty)
         ? song.karaokeAudioPath!
         : '';
+
+    _currentVocalPath = vocalPath;
+    _currentKaraokePath = karaokePath;
+    _hasSecondaryTrack = karaokePath.isNotEmpty;
 
     _sourceType = vocalPath.startsWith('http://') || vocalPath.startsWith('https://')
         ? PlaybackSourceType.archiveStream
@@ -234,64 +274,74 @@ class JustAudioAdapter implements PlaybackAdapter {
     }
 
     try {
-      // 1. Load Primary Audio
-      if (vocalPath.isNotEmpty) {
-        try {
-          await _loadSourceToPlayer(_primaryPlayer, vocalPath,
-              initialPosition: initialPosition);
-        } on Object catch (primaryErr) {
-          debugPrint('JustAudioAdapter primary track notice: $primaryErr');
-        }
-      }
+      if (_playbackMode == PlaybackMode.karaoke && _hasSecondaryTrack) {
+        // Karaoke Mode: Load and play secondary instrumental stem immediately
+        await _loadSourceToPlayer(_secondaryPlayer, karaokePath,
+            initialPosition: initialPosition);
+        _isSecondaryLoaded = true;
 
-      // 2. Load Secondary Instrumental Track if present
-      if (karaokePath.isNotEmpty) {
         try {
-          await _loadSourceToPlayer(_secondaryPlayer, karaokePath,
-              initialPosition: initialPosition);
-          _hasSecondaryTrack = true;
-        } on Object catch (secError) {
-          debugPrint('JustAudioAdapter secondary track unavailable: $secError');
-          _hasSecondaryTrack = false;
-        }
-      } else {
-        try {
-          await _secondaryPlayer.stop();
-        } on Object catch (_) {}
-        _hasSecondaryTrack = false;
-      }
-
-      // 3. Set speed and mode volumes
-      try {
-        await _primaryPlayer.setSpeed(_speed);
-        if (_hasSecondaryTrack) {
           await _secondaryPlayer.setSpeed(_speed);
-        }
-      } on Object catch (_) {}
-      _applyModeVolumes();
-
-      // Set loop mode
-      try {
-        await _primaryPlayer.setLoopMode(_loopMode);
-        if (_hasSecondaryTrack) {
           await _secondaryPlayer.setLoopMode(_loopMode);
-        }
-      } on Object catch (_) {}
+          await _secondaryPlayer.setVolume(_volume);
+        } catch (_) {}
 
-      // 4. Start playback if requested
-      if (autoPlay) {
-        try {
-          if (_hasSecondaryTrack) {
-            await Future.wait([_primaryPlayer.play(), _secondaryPlayer.play()]);
-          } else {
-            await _primaryPlayer.play();
+        if (autoPlay) {
+          try {
+            await _secondaryPlayer.play();
+          } catch (e) {
+            debugPrint('JustAudioAdapter karaoke autoPlay notice: $e');
           }
-        } on Object catch (_) {}
-        _engineState = PlaybackEngineState.playing;
+          _engineState = PlaybackEngineState.playing;
+        } else {
+          _engineState = PlaybackEngineState.paused;
+        }
+        _stateController.add(_engineState);
+
+        // Preload primary vocal track in background (non-blocking)
+        if (vocalPath.isNotEmpty) {
+          _loadSourceToPlayer(_primaryPlayer, vocalPath, initialPosition: initialPosition)
+              .then((_) {
+            _primaryPlayer.setVolume(0.0);
+          }).catchError((e) {
+            debugPrint('Background vocal preload notice: $e');
+          });
+        }
       } else {
-        _engineState = PlaybackEngineState.paused;
+        // Normal Mode: Load and play primary vocal track immediately!
+        // No waiting for secondary track to download - instant playback response!
+        await _loadSourceToPlayer(_primaryPlayer, vocalPath,
+            initialPosition: initialPosition);
+
+        try {
+          await _primaryPlayer.setSpeed(_speed);
+          await _primaryPlayer.setLoopMode(_loopMode);
+          await _primaryPlayer.setVolume(_volume);
+        } catch (_) {}
+
+        if (autoPlay) {
+          try {
+            await _primaryPlayer.play();
+          } catch (e) {
+            debugPrint('JustAudioAdapter primary autoPlay notice: $e');
+          }
+          _engineState = PlaybackEngineState.playing;
+        } else {
+          _engineState = PlaybackEngineState.paused;
+        }
+        _stateController.add(_engineState);
+
+        // Preload secondary instrumental stem in background (non-blocking)
+        if (karaokePath.isNotEmpty) {
+          _loadSourceToPlayer(_secondaryPlayer, karaokePath, initialPosition: initialPosition)
+              .then((_) {
+            _isSecondaryLoaded = true;
+            _secondaryPlayer.setVolume(0.0);
+          }).catchError((e) {
+            debugPrint('Background karaoke preload notice: $e');
+          });
+        }
       }
-      _stateController.add(_engineState);
     } on Object catch (e) {
       debugPrint('JustAudioAdapter error loading "$vocalPath": $e');
       _errorMessage = 'Unable to play audio: $e';
@@ -304,30 +354,26 @@ class JustAudioAdapter implements PlaybackAdapter {
   @override
   Future<void> play() async {
     try {
-      if (_hasSecondaryTrack) {
-        await _secondaryPlayer.seek(_primaryPlayer.position);
-        await Future.wait([_primaryPlayer.play(), _secondaryPlayer.play()]);
+      if (_playbackMode == PlaybackMode.karaoke && _hasSecondaryTrack) {
+        await _secondaryPlayer.play();
       } else {
         await _primaryPlayer.play();
       }
+      _engineState = PlaybackEngineState.playing;
     } catch (e) {
       debugPrint('JustAudioAdapter play channel notice: $e');
     }
-    _engineState = PlaybackEngineState.playing;
     _stateController.add(_engineState);
   }
 
   @override
   Future<void> pause() async {
     try {
-      if (_hasSecondaryTrack) {
-        await Future.wait([_primaryPlayer.pause(), _secondaryPlayer.pause()]);
-      } else {
-        await _primaryPlayer.pause();
-      }
-    } catch (e) {
-      debugPrint('JustAudioAdapter pause channel notice: $e');
-    }
+      await _primaryPlayer.pause();
+    } catch (_) {}
+    try {
+      await _secondaryPlayer.pause();
+    } catch (_) {}
     _engineState = PlaybackEngineState.paused;
     _stateController.add(_engineState);
   }
@@ -336,10 +382,10 @@ class JustAudioAdapter implements PlaybackAdapter {
   Future<void> stop() async {
     try {
       await _primaryPlayer.stop();
+    } catch (_) {}
+    try {
       await _secondaryPlayer.stop();
-    } catch (e) {
-      debugPrint('JustAudioAdapter stop channel notice: $e');
-    }
+    } catch (_) {}
     _position = Duration.zero;
     _engineState = PlaybackEngineState.idle;
     _stateController.add(_engineState);
@@ -352,11 +398,8 @@ class JustAudioAdapter implements PlaybackAdapter {
     _positionController.add(targetPosition);
 
     try {
-      if (_hasSecondaryTrack) {
-        await Future.wait([
-          _primaryPlayer.seek(targetPosition),
-          _secondaryPlayer.seek(targetPosition),
-        ]);
+      if (_playbackMode == PlaybackMode.karaoke && _hasSecondaryTrack) {
+        await _secondaryPlayer.seek(targetPosition);
       } else {
         await _primaryPlayer.seek(targetPosition);
       }
@@ -375,13 +418,9 @@ class JustAudioAdapter implements PlaybackAdapter {
   Future<void> setSpeed(double speed) async {
     _speed = speed.clamp(0.5, 2.0);
     try {
+      await _primaryPlayer.setSpeed(_speed);
       if (_hasSecondaryTrack) {
-        await Future.wait([
-          _primaryPlayer.setSpeed(_speed),
-          _secondaryPlayer.setSpeed(_speed),
-        ]);
-      } else {
-        await _primaryPlayer.setSpeed(_speed);
+        await _secondaryPlayer.setSpeed(_speed);
       }
     } catch (e) {
       debugPrint('JustAudioAdapter speed channel notice: $e');
@@ -403,8 +442,47 @@ class JustAudioAdapter implements PlaybackAdapter {
 
   @override
   Future<void> setPlaybackMode(PlaybackMode mode) async {
+    if (_playbackMode == mode) return;
     _playbackMode = mode;
-    _applyModeVolumes();
+
+    if (mode == PlaybackMode.karaoke && _hasSecondaryTrack) {
+      final currentPos = _primaryPlayer.position;
+      try {
+        await _primaryPlayer.pause();
+      } catch (_) {}
+
+      if (!_isSecondaryLoaded && _currentKaraokePath.isNotEmpty) {
+        await _loadSourceToPlayer(_secondaryPlayer, _currentKaraokePath, initialPosition: currentPos);
+        _isSecondaryLoaded = true;
+      }
+
+      try {
+        await _secondaryPlayer.seek(currentPos);
+        await _secondaryPlayer.setVolume(_volume);
+        await _primaryPlayer.setVolume(0.0);
+        if (_engineState == PlaybackEngineState.playing) {
+          await _secondaryPlayer.play();
+        }
+      } catch (e) {
+        debugPrint('JustAudioAdapter mode switch to karaoke error: $e');
+      }
+    } else {
+      final currentPos = _secondaryPlayer.position;
+      try {
+        await _secondaryPlayer.pause();
+      } catch (_) {}
+
+      try {
+        await _primaryPlayer.seek(currentPos);
+        await _primaryPlayer.setVolume(_volume);
+        await _secondaryPlayer.setVolume(0.0);
+        if (_engineState == PlaybackEngineState.playing) {
+          await _primaryPlayer.play();
+        }
+      } catch (e) {
+        debugPrint('JustAudioAdapter mode switch to normal error: $e');
+      }
+    }
   }
 
   @override
@@ -433,10 +511,16 @@ class JustAudioAdapter implements PlaybackAdapter {
   Future<void> dispose() async {
     await _primaryStateSub?.cancel();
     _primaryStateSub = null;
+    await _secondaryStateSub?.cancel();
+    _secondaryStateSub = null;
     await _primaryPositionSub?.cancel();
     _primaryPositionSub = null;
+    await _secondaryPositionSub?.cancel();
+    _secondaryPositionSub = null;
     await _primaryDurationSub?.cancel();
     _primaryDurationSub = null;
+    await _secondaryDurationSub?.cancel();
+    _secondaryDurationSub = null;
 
     try {
       await _primaryPlayer.dispose();
