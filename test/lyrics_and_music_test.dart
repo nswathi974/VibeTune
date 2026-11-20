@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibetune/data/song_catalog.dart';
 import 'package:vibetune/models/lyric_line_model.dart';
@@ -25,10 +26,19 @@ void main() {
 ''';
       final lyrics = LyricsService.parseLrc(lrcContent);
       expect(lyrics.length, 3);
-      expect(lyrics[0].timestamp, const Duration(seconds: 4, milliseconds: 500));
+      expect(
+        lyrics[0].timestamp,
+        const Duration(seconds: 4, milliseconds: 500),
+      );
       expect(lyrics[0].text, 'First line of song');
-      expect(lyrics[1].timestamp, const Duration(seconds: 12, milliseconds: 750));
-      expect(lyrics[2].timestamp, const Duration(minutes: 1, seconds: 5, milliseconds: 100));
+      expect(
+        lyrics[1].timestamp,
+        const Duration(seconds: 12, milliseconds: 750),
+      );
+      expect(
+        lyrics[2].timestamp,
+        const Duration(minutes: 1, seconds: 5, milliseconds: 100),
+      );
       expect(lyrics[2].text, 'Chorus kicks in here');
     });
 
@@ -39,8 +49,14 @@ void main() {
 ''';
       final lyrics = LyricsService.parseLrc(lrcContent);
       expect(lyrics.length, 2);
-      expect(lyrics[0].timestamp, const Duration(seconds: 3, milliseconds: 250));
-      expect(lyrics[1].timestamp, const Duration(seconds: 15, milliseconds: 800));
+      expect(
+        lyrics[0].timestamp,
+        const Duration(seconds: 3, milliseconds: 250),
+      );
+      expect(
+        lyrics[1].timestamp,
+        const Duration(seconds: 15, milliseconds: 800),
+      );
     });
 
     test('sorts non-chronological lines into ascending playback order', () {
@@ -81,28 +97,55 @@ Not an LRC line at all
       ];
 
       // Before first line
-      expect(LyricsService.getActiveLineIndex(const Duration(seconds: 2), lines), 0);
+      expect(
+        LyricsService.getActiveLineIndex(const Duration(seconds: 2), lines),
+        0,
+      );
 
       // Exactly at first line
-      expect(LyricsService.getActiveLineIndex(const Duration(seconds: 5), lines), 0);
+      expect(
+        LyricsService.getActiveLineIndex(const Duration(seconds: 5), lines),
+        0,
+      );
 
       // Between first and second line
-      expect(LyricsService.getActiveLineIndex(const Duration(seconds: 10), lines), 0);
+      expect(
+        LyricsService.getActiveLineIndex(const Duration(seconds: 10), lines),
+        0,
+      );
 
       // Between third and fourth line
-      expect(LyricsService.getActiveLineIndex(const Duration(seconds: 35), lines), 2);
+      expect(
+        LyricsService.getActiveLineIndex(const Duration(seconds: 35), lines),
+        2,
+      );
 
       // Past the last line
-      expect(LyricsService.getActiveLineIndex(const Duration(minutes: 1), lines), 3);
+      expect(
+        LyricsService.getActiveLineIndex(const Duration(minutes: 1), lines),
+        3,
+      );
 
       // Empty list returns -1
-      expect(LyricsService.getActiveLineIndex(const Duration(seconds: 10), []), -1);
+      expect(
+        LyricsService.getActiveLineIndex(const Duration(seconds: 10), []),
+        -1,
+      );
     });
 
     test('TranslationService handles Latin/English and transliterated queries cleanly', () {
-      expect(TranslationService.supportedLanguages.containsKey('Kannada'), isTrue);
-      expect(TranslationService.supportedLanguages.containsKey('Hindi'), isTrue);
-      expect(TranslationService.supportedLanguages.containsKey('Tamil'), isTrue);
+      expect(
+        TranslationService.supportedLanguages.containsKey('Kannada'),
+        isTrue,
+      );
+      expect(
+        TranslationService.supportedLanguages.containsKey('Hindi'),
+        isTrue,
+      );
+      expect(
+        TranslationService.supportedLanguages.containsKey('Tamil'),
+        isTrue,
+      );
     });
   });
 
@@ -111,9 +154,15 @@ Not an LRC line at all
       final songs = SongCatalog.allSongs;
       expect(songs.length, 10);
 
-      final hindiSongs = songs.where((s) => s.language.toLowerCase() == 'hindi').toList();
-      final kannadaSongs = songs.where((s) => s.language.toLowerCase() == 'kannada').toList();
-      final tamilSongs = songs.where((s) => s.language.toLowerCase() == 'tamil').toList();
+      final hindiSongs = songs
+          .where((s) => s.language.toLowerCase() == 'hindi')
+          .toList();
+      final kannadaSongs = songs
+          .where((s) => s.language.toLowerCase() == 'kannada')
+          .toList();
+      final tamilSongs = songs
+          .where((s) => s.language.toLowerCase() == 'tamil')
+          .toList();
 
       expect(hindiSongs.length, 4, reason: 'Must have 4 Hindi songs');
       expect(kannadaSongs.length, 4, reason: 'Must have 4 Kannada songs');
@@ -125,14 +174,24 @@ Not an LRC line at all
 
       // Search by title
       playlistService.setSearchQuery('Agar Tum Saath Ho');
-      expect(playlistService.filteredSongs.any((s) => s.title.contains('Agar Tum Saath Ho')), isTrue);
+      expect(
+        playlistService.filteredSongs.any(
+          (s) => s.title.contains('Agar Tum Saath Ho'),
+        ),
+        isTrue,
+      );
 
       // Search by artist
       playlistService.setSearchQuery('Sonu Nigam');
-      expect(playlistService.filteredSongs.every((s) =>
-        s.artist.toLowerCase().contains('sonu nigam') ||
-        s.title.toLowerCase().contains('sonu nigam') ||
-        s.movieOrAlbum.toLowerCase().contains('sonu nigam')), isTrue);
+      expect(
+        playlistService.filteredSongs.every(
+          (s) =>
+              s.artist.toLowerCase().contains('sonu nigam') ||
+              s.title.toLowerCase().contains('sonu nigam') ||
+              s.movieOrAlbum.toLowerCase().contains('sonu nigam'),
+        ),
+        isTrue,
+      );
 
       // Empty query returns all songs
       playlistService.setSearchQuery('');
@@ -203,48 +262,97 @@ Not an LRC line at all
   });
 
   group('LrclibService Result Parsing Tests', () {
-    test('LrcResult handles synced lyrics, plain lyrics, and not found status', () {
-      final syncedResult = LrcResult(
-        isFound: true,
-        isSynced: true,
-        lyrics: [LyricLine(timestamp: const Duration(seconds: 5), text: 'Synced test')],
-        plainLyrics: 'Synced test',
-        sourceDescription: 'LRCLIB (Synchronized)',
-      );
-      expect(syncedResult.isFound, isTrue);
-      expect(syncedResult.isSynced, isTrue);
-      expect(syncedResult.lyrics.length, 1);
+    test(
+      'LrcResult handles synced lyrics, plain lyrics, and not found status',
+      () {
+        final syncedResult = LrcResult(
+          isFound: true,
+          isSynced: true,
+          lyrics: [
+            LyricLine(
+              timestamp: const Duration(seconds: 5),
+              text: 'Synced test',
+            ),
+          ],
+          plainLyrics: 'Synced test',
+          sourceDescription: 'LRCLIB (Synchronized)',
+        );
+        expect(syncedResult.isFound, isTrue);
+        expect(syncedResult.isSynced, isTrue);
+        expect(syncedResult.lyrics.length, 1);
 
-      final plainResult = LrcResult(
-        isFound: true,
-        isSynced: false,
-        lyrics: [LyricLine(timestamp: Duration.zero, text: 'Plain test')],
-        plainLyrics: 'Plain test',
-        sourceDescription: 'LRCLIB (Plain Lyrics - Unsynchronized)',
-      );
-      expect(plainResult.isFound, isTrue);
-      expect(plainResult.isSynced, isFalse);
+        final plainResult = LrcResult(
+          isFound: true,
+          isSynced: false,
+          lyrics: [LyricLine(timestamp: Duration.zero, text: 'Plain test')],
+          plainLyrics: 'Plain test',
+          sourceDescription: 'LRCLIB (Plain Lyrics - Unsynchronized)',
+        );
+        expect(plainResult.isFound, isTrue);
+        expect(plainResult.isSynced, isFalse);
 
-      final notFoundResult = LrcResult.notFound('Lyrics not found');
-      expect(notFoundResult.isFound, isFalse);
-      expect(notFoundResult.errorMessage, 'Lyrics not found');
-    });
+        final notFoundResult = LrcResult.notFound('Lyrics not found');
+        expect(notFoundResult.isFound, isFalse);
+        expect(notFoundResult.errorMessage, 'Lyrics not found');
+      },
+    );
   });
 
   group('Audio Source & English Lyrics Authenticity Tests', () {
-    test('All 10 songs have verified local audio master assets present on disk', () {
+    test('Every song has both its normal and karaoke assets in the app bundle', () async {
       final songs = SongCatalog.allSongs;
-      expect(songs.length, 10);
 
       for (final song in songs) {
-        expect(song.isPlayable, isTrue);
-        expect(song.normalAudioPath.startsWith('assets/audio/normal/'), isTrue);
-        expect(song.karaokeAudioPath!.startsWith('assets/audio/karaoke/'), isTrue);
-        expect(song.lyricsPath!.startsWith('assets/lyrics/'), isTrue);
-        expect(song.hasTimedLyrics, isTrue);
-        expect(song.isKaraokeAvailable, isTrue);
+        expect(
+          () => rootBundle.load(song.normalAudioPath),
+          returnsNormally,
+          reason:
+              'Missing normal audio for ${song.title}: ${song.normalAudioPath}',
+        );
+        expect(
+          await rootBundle.load(song.normalAudioPath),
+          isA<ByteData>(),
+          reason: 'Normal audio is empty or missing for ${song.title}',
+        );
+
+        expect(song.karaokeAudioPath, isNotNull);
+        expect(song.karaokeAudioPath, isNotEmpty);
+        expect(
+          () => rootBundle.load(song.karaokeAudioPath!),
+          returnsNormally,
+          reason:
+              'Missing karaoke audio for ${song.title}: ${song.karaokeAudioPath}',
+        );
+        expect(
+          await rootBundle.load(song.karaokeAudioPath!),
+          isA<ByteData>(),
+          reason: 'Karaoke audio is empty or missing for ${song.title}',
+        );
       }
     });
+
+    test(
+      'All 10 songs have verified local audio master assets present on disk',
+      () {
+        final songs = SongCatalog.allSongs;
+        expect(songs.length, 10);
+
+        for (final song in songs) {
+          expect(song.isPlayable, isTrue);
+          expect(
+            song.normalAudioPath.startsWith('assets/audio/normal/'),
+            isTrue,
+          );
+          expect(
+            song.karaokeAudioPath!.startsWith('assets/audio/karaoke/'),
+            isTrue,
+          );
+          expect(song.lyricsPath!.startsWith('assets/lyrics/'), isTrue);
+          expect(song.hasTimedLyrics, isTrue);
+          expect(song.isKaraokeAvailable, isTrue);
+        }
+      },
+    );
 
     test('AudioPlayerService initializes with clean honest state and no fake fallbacks', () {
       final audioService = AudioPlayerService();
