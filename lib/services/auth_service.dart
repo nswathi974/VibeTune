@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../config/api_config.dart';
 import '../models/user_model.dart';
 
@@ -14,7 +16,11 @@ class AuthResult {
   final String? errorMessage;
   final String? message;
 
-  const AuthResult._({required this.isSuccess, this.errorMessage, this.message});
+  const AuthResult._({
+    required this.isSuccess,
+    this.errorMessage,
+    this.message,
+  });
 
   factory AuthResult.success([String? message]) =>
       AuthResult._(isSuccess: true, message: message);
@@ -60,8 +66,10 @@ class AuthService extends ChangeNotifier {
       // Handle persistent guest session
       if (isLoggedIn && (cachedId == 'usr_guest')) {
         final cachedName = prefs.getString(_keyUserName) ?? 'Guest Explorer';
-        final cachedEmail = prefs.getString(_keyUserEmail) ?? 'guest@vibetune.com';
-        final cachedLangs = prefs.getStringList(_keyUserLangs) ??
+        final cachedEmail =
+            prefs.getString(_keyUserEmail) ?? 'guest@vibetune.com';
+        final cachedLangs =
+            prefs.getStringList(_keyUserLangs) ??
             const ['Hindi', 'Kannada', 'Telugu', 'Tamil', 'Malayalam'];
 
         _currentUser = UserModel(
@@ -86,9 +94,11 @@ class AuthService extends ChangeNotifier {
           // If server is offline or unreachable on boot, keep local session using cached credentials
           final cId = prefs.getString(_keyUserId) ?? 'usr_local';
           final cachedName = prefs.getString(_keyUserName) ?? 'Swathi';
-          final cachedEmail = prefs.getString(_keyUserEmail) ?? 'swathi@vibetune.com';
+          final cachedEmail =
+              prefs.getString(_keyUserEmail) ?? 'swathi@vibetune.com';
           final cachedRole = prefs.getString(_keyUserRole) ?? 'user';
-          final cachedLangs = prefs.getStringList(_keyUserLangs) ??
+          final cachedLangs =
+              prefs.getStringList(_keyUserLangs) ??
               const ['Hindi', 'Kannada', 'Telugu', 'Tamil', 'Malayalam'];
 
           _currentUser = UserModel(
@@ -109,7 +119,9 @@ class AuthService extends ChangeNotifier {
 
   /// Validates JWT and retrieves latest user profile from GET /api/auth/me
   Future<bool> refreshUserProfile() async {
-    if (_token == null || _token == 'guest_session' || _currentUser?.id == 'usr_guest') {
+    if (_token == null ||
+        _token == 'guest_session' ||
+        _currentUser?.id == 'usr_guest') {
       return true;
     }
     return await _fetchUserProfile(_token!);
@@ -124,25 +136,27 @@ class AuthService extends ChangeNotifier {
   Future<bool> _fetchUserProfile(String jwtToken) async {
     try {
       final uri = Uri.parse(ApiConfig.meUrl);
-      final response = await http.get(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $jwtToken',
-        },
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         if (data['success'] == true && data['user'] != null) {
           final userJson = data['user'] as Map<String, dynamic>;
           final prefs = await SharedPreferences.getInstance();
-          final cachedLangs = prefs.getStringList(_keyUserLangs) ??
+          final cachedLangs =
+              prefs.getStringList(_keyUserLangs) ??
               const ['Hindi', 'Kannada', 'Telugu', 'Tamil', 'Malayalam'];
 
-          _currentUser = UserModel.fromJson(userJson).copyWith(
-            preferredLanguages: cachedLangs,
-          );
+          _currentUser = UserModel.fromJson(userJson)
+              .copyWith(preferredLanguages: cachedLangs);
           _isAuthenticated = true;
           notifyListeners();
           return true;
@@ -167,14 +181,16 @@ class AuthService extends ChangeNotifier {
 
     try {
       final uri = Uri.parse(ApiConfig.loginUrl);
-      final response = await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email.trim().toLowerCase(),
-          'password': password.trim(),
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'email': email.trim().toLowerCase(),
+              'password': password.trim(),
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
       Map<String, dynamic> data = {};
       try {
@@ -183,7 +199,8 @@ class AuthService extends ChangeNotifier {
           data = decoded;
         }
       } catch (_) {
-        final error = 'Server returned HTTP ${response.statusCode}. Expected JSON response.';
+        final error =
+            'Server returned HTTP ${response.statusCode}. Expected JSON response.';
         _lastError = error;
         _isLoading = false;
         notifyListeners();
@@ -196,12 +213,12 @@ class AuthService extends ChangeNotifier {
 
         _token = token;
         final prefs = await SharedPreferences.getInstance();
-        final existingLangs = prefs.getStringList(_keyUserLangs) ??
+        final existingLangs =
+            prefs.getStringList(_keyUserLangs) ??
             const ['Hindi', 'Kannada', 'Telugu', 'Tamil', 'Malayalam'];
 
-        _currentUser = UserModel.fromJson(userJson).copyWith(
-          preferredLanguages: existingLangs,
-        );
+        _currentUser = UserModel.fromJson(userJson)
+            .copyWith(preferredLanguages: existingLangs);
         _isAuthenticated = true;
 
         // Persist token securely and save session metadata
@@ -211,13 +228,26 @@ class AuthService extends ChangeNotifier {
         await prefs.setString(_keyUserName, _currentUser!.name);
         await prefs.setString(_keyUserEmail, _currentUser!.email);
         await prefs.setString(_keyUserRole, _currentUser!.role);
-        await prefs.setStringList(_keyUserLangs, _currentUser!.preferredLanguages);
+        await prefs.setStringList(
+          _keyUserLangs,
+          _currentUser!.preferredLanguages,
+        );
 
         _isLoading = false;
         notifyListeners();
-        return AuthResult.success(data['message'] as String? ?? 'Login successful.');
+        return AuthResult.success(
+          data['message'] as String? ?? 'Login successful.',
+        );
+      } else if (response.statusCode == 503) {
+        final message =
+            'Database unavailable (503). Start Demo mode or configure MongoDB Atlas.';
+        _lastError = message;
+        _isLoading = false;
+        notifyListeners();
+        return AuthResult.failure(message);
       } else {
-        final message = (data['message'] as String?) ?? 'Invalid email or password.';
+        final message =
+            (data['message'] as String?) ?? 'Invalid email or password.';
         _lastError = message;
         _isLoading = false;
         notifyListeners();
@@ -225,19 +255,22 @@ class AuthService extends ChangeNotifier {
       }
     } on SocketException catch (e) {
       final detail = e.osError?.message ?? e.message;
-      final error = 'Unable to reach VibeTune server at ${ApiConfig.baseUrl}. Please verify the Node.js backend is running (port ${ApiConfig.port}). ($detail)';
+      final error =
+          'Unable to reach VibeTune server at ${ApiConfig.baseUrl}. Please verify the Node.js backend is running (port ${ApiConfig.port}). ($detail)';
       _lastError = error;
       _isLoading = false;
       notifyListeners();
       return AuthResult.failure(error);
     } on http.ClientException catch (e) {
-      final error = 'Unable to reach VibeTune server (${ApiConfig.baseUrl}). ${e.message}';
+      final error =
+          'Unable to reach VibeTune server (${ApiConfig.baseUrl}). ${e.message}';
       _lastError = error;
       _isLoading = false;
       notifyListeners();
       return AuthResult.failure(error);
     } on TimeoutException {
-      final error = 'Connection timed out while contacting VibeTune server (${ApiConfig.baseUrl}). Please verify that the backend is running.';
+      final error =
+          'Connection timed out while contacting VibeTune server (${ApiConfig.baseUrl}). Please verify that the backend is running.';
       _lastError = error;
       _isLoading = false;
       notifyListeners();
@@ -282,15 +315,17 @@ class AuthService extends ChangeNotifier {
 
     try {
       final uri = Uri.parse(ApiConfig.signupUrl);
-      final response = await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'name': name.trim(),
-          'email': trimmedEmail,
-          'password': password.trim(),
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'name': name.trim(),
+              'email': trimmedEmail,
+              'password': password.trim(),
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
       Map<String, dynamic> data = {};
       try {
@@ -299,7 +334,8 @@ class AuthService extends ChangeNotifier {
           data = decoded;
         }
       } catch (_) {
-        final error = 'Server returned HTTP ${response.statusCode}. Expected JSON response.';
+        final error =
+            'Server returned HTTP ${response.statusCode}. Expected JSON response.';
         _lastError = error;
         _isLoading = false;
         notifyListeners();
@@ -315,9 +351,8 @@ class AuthService extends ChangeNotifier {
             ? preferredLanguages
             : const ['Hindi', 'Kannada', 'Telugu', 'Tamil', 'Malayalam'];
 
-        _currentUser = UserModel.fromJson(userJson).copyWith(
-          preferredLanguages: langs,
-        );
+        _currentUser = UserModel.fromJson(userJson)
+            .copyWith(preferredLanguages: langs);
         _isAuthenticated = true;
 
         // Persist token securely and save session metadata
@@ -328,13 +363,26 @@ class AuthService extends ChangeNotifier {
         await prefs.setString(_keyUserName, _currentUser!.name);
         await prefs.setString(_keyUserEmail, _currentUser!.email);
         await prefs.setString(_keyUserRole, _currentUser!.role);
-        await prefs.setStringList(_keyUserLangs, _currentUser!.preferredLanguages);
+        await prefs.setStringList(
+          _keyUserLangs,
+          _currentUser!.preferredLanguages,
+        );
 
         _isLoading = false;
         notifyListeners();
-        return AuthResult.success(data['message'] as String? ?? 'Registration successful.');
+        return AuthResult.success(
+          data['message'] as String? ?? 'Registration successful.',
+        );
+      } else if (response.statusCode == 503) {
+        return await _startOfflineLocalAccount(
+          name: name,
+          email: trimmedEmail,
+          preferredLanguages: preferredLanguages,
+        );
       } else {
-        final message = (data['message'] as String?) ?? 'Registration failed. Please check your details.';
+        final message =
+            (data['message'] as String?) ??
+            'Registration failed. Please check your details.';
         _lastError = message;
         _isLoading = false;
         notifyListeners();
@@ -342,23 +390,26 @@ class AuthService extends ChangeNotifier {
       }
     } on SocketException catch (e) {
       final detail = e.osError?.message ?? e.message;
-      final error = 'Unable to reach VibeTune server at ${ApiConfig.baseUrl}. Please verify the Node.js backend is running (port ${ApiConfig.port}). ($detail)';
-      _lastError = error;
-      _isLoading = false;
-      notifyListeners();
-      return AuthResult.failure(error);
+      return await _startOfflineLocalAccount(
+        name: name,
+        email: trimmedEmail,
+        preferredLanguages: preferredLanguages,
+        detail: detail,
+      );
     } on http.ClientException catch (e) {
-      final error = 'Unable to reach VibeTune server (${ApiConfig.baseUrl}). ${e.message}';
-      _lastError = error;
-      _isLoading = false;
-      notifyListeners();
-      return AuthResult.failure(error);
+      return await _startOfflineLocalAccount(
+        name: name,
+        email: trimmedEmail,
+        preferredLanguages: preferredLanguages,
+        detail: e.message,
+      );
     } on TimeoutException {
-      final error = 'Connection timed out while contacting VibeTune server (${ApiConfig.baseUrl}). Please verify that the backend is running.';
-      _lastError = error;
-      _isLoading = false;
-      notifyListeners();
-      return AuthResult.failure(error);
+      return await _startOfflineLocalAccount(
+        name: name,
+        email: trimmedEmail,
+        preferredLanguages: preferredLanguages,
+        detail: 'Connection timed out',
+      );
     } catch (e) {
       final error = 'Sign up failed: ${e.toString()}';
       _lastError = error;
@@ -366,6 +417,45 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       return AuthResult.failure(error);
     }
+  }
+
+  Future<AuthResult> _startOfflineLocalAccount({
+    required String name,
+    required String email,
+    required List<String> preferredLanguages,
+    String? detail,
+  }) async {
+    final langs = preferredLanguages.isNotEmpty
+        ? preferredLanguages
+        : const ['Hindi', 'Kannada', 'Telugu', 'Tamil', 'Malayalam'];
+
+    _currentUser = UserModel(
+      id: 'usr_local_${DateTime.now().millisecondsSinceEpoch}',
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      role: 'user',
+      preferredLanguages: langs,
+    );
+    _token = 'local_demo_session';
+    _isAuthenticated = true;
+    _isLoading = false;
+    _lastError = null;
+
+    await _secureStorage.write(key: _keyJwtToken, value: 'local_demo_session');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyIsLoggedIn, true);
+    await prefs.setString(_keyUserId, _currentUser!.id);
+    await prefs.setString(_keyUserName, _currentUser!.name);
+    await prefs.setString(_keyUserEmail, _currentUser!.email);
+    await prefs.setString(_keyUserRole, _currentUser!.role);
+    await prefs.setStringList(_keyUserLangs, langs);
+
+    notifyListeners();
+    return AuthResult.success(
+      detail == null
+          ? 'Local demo account created successfully.'
+          : 'Local demo account created while the server was unavailable.',
+    );
   }
 
   /// Check backend connectivity and database health via GET /api/health

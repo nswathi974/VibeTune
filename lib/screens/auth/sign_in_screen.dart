@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../services/auth_service.dart';
 import '../../theme/app_colors.dart';
 import '../main_navigation_scaffold.dart';
@@ -46,8 +47,11 @@ class _SignInScreenState extends State<SignInScreen> {
       );
     } else {
       // If Quick Demo is used and backend is offline/unreachable, gracefully initialize local guest session
-      if (isDemo && (result.errorMessage?.contains('Unable to reach') == true ||
-          result.errorMessage?.contains('timed out') == true)) {
+      if (isDemo &&
+          (result.errorMessage?.contains('Unable to reach') == true ||
+              result.errorMessage?.contains('timed out') == true ||
+              result.errorMessage?.contains('503') == true ||
+              result.errorMessage?.contains('disconnected') == true)) {
         auth.continueAsGuest();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +70,9 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
             backgroundColor: AppColors.secondary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
         Navigator.pushAndRemoveUntil(
@@ -93,7 +99,9 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
           backgroundColor: const Color(0xFFD32F2F),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -103,9 +111,7 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Sign In'),
-      ),
+      appBar: AppBar(title: const Text('Sign In')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -131,7 +137,10 @@ class _SignInScreenState extends State<SignInScreen> {
                       ],
                     ),
                     child: ClipOval(
-                      child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
@@ -162,7 +171,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 // Email Field
                 const Text(
                   'Email Address',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -174,7 +187,10 @@ class _SignInScreenState extends State<SignInScreen> {
                     hintStyle: const TextStyle(color: AppColors.textMuted),
                     filled: true,
                     fillColor: AppColors.surface,
-                    prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      color: AppColors.primary,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: const BorderSide(color: AppColors.border),
@@ -185,11 +201,15 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                      borderSide: const BorderSide(
+                        color: AppColors.primary,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Please enter your email';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Please enter your email';
                     if (!val.contains('@')) return 'Please enter a valid email';
                     return null;
                   },
@@ -200,7 +220,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 // Password Field
                 const Text(
                   'Password',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -212,13 +236,19 @@ class _SignInScreenState extends State<SignInScreen> {
                     hintStyle: const TextStyle(color: AppColors.textMuted),
                     filled: true,
                     fillColor: AppColors.surface,
-                    prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: AppColors.primary,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                         color: AppColors.textSecondary,
                       ),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -230,11 +260,15 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                      borderSide: const BorderSide(
+                        color: AppColors.primary,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                   validator: (val) {
-                    if (val == null || val.isEmpty) return 'Please enter your password';
+                    if (val == null || val.isEmpty)
+                      return 'Please enter your password';
                     return null;
                   },
                 ),
@@ -261,7 +295,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         ? const SizedBox(
                             width: 24,
                             height: 24,
-                            child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
+                            child: CircularProgressIndicator(
+                              color: Colors.black,
+                              strokeWidth: 2.5,
+                            ),
                           )
                         : const Text(
                             'Sign In',
@@ -281,12 +318,21 @@ class _SignInScreenState extends State<SignInScreen> {
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
                     side: BorderSide(color: AppColors.primary.withAlpha(100)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  icon: const Icon(Icons.flash_on, size: 18, color: AppColors.primary),
+                  icon: const Icon(
+                    Icons.flash_on,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
                   label: const Text(
                     'Quick Demo Login (Swathi)',
-                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   onPressed: () {
                     _emailController.text = 'swathi.mca@vibetune.com';
@@ -309,7 +355,9 @@ class _SignInScreenState extends State<SignInScreen> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const SignUpScreen(),
+                          ),
                         );
                       },
                       child: const Text(
@@ -332,7 +380,9 @@ class _SignInScreenState extends State<SignInScreen> {
                       context.read<AuthService>().continueAsGuest();
                       Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (_) => const MainNavigationScaffold()),
+                        MaterialPageRoute(
+                          builder: (_) => const MainNavigationScaffold(),
+                        ),
                         (route) => false,
                       );
                     },
